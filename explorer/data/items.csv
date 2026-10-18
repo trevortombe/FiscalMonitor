@@ -1,0 +1,232 @@
+table,id,label,level,kind,type,status,sign
+1,101,Revenues,1,item,flow,current,1
+1,102,Expenses,0,header,flow,current,1
+1,103,"Program expenses, excluding net actuarial losses",2,item,flow,current,-1
+1,104,Program expenses,2,item,flow,current,-1
+1,105,Public debt charges,2,item,flow,current,-1
+1,106,"Budgetary balance, excluding net actuarial losses",1,item,flow,current,1
+1,107,Net actuarial losses,1,item,flow,current,-1
+1,108,Budgetary balance (deficit/surplus),0,total,flow,current,1
+1,110,Non-budgetary transactions,1,item,flow,current,1
+1,111,Financial source/requirement,0,total,flow,current,1
+1,113,Net change in financing activities,1,item,flow,current,1
+1,114,Net change in cash balances,1,item,flow,current,1
+1,116,Cash balance at end of period,0,total,balance,current,1
+1,100,Budgetary transactions,0,header,flow,discontinued,1
+1,109,Operating surplus,1,item,flow,discontinued,1
+1,112,Foreign exchange transactions,1,item,flow,discontinued,1
+1,115,Net change in borrowings,1,item,flow,discontinued,1
+2,200,Tax revenues,0,header,flow,current,1
+2,201,Income taxes,1,header,flow,current,1
+2,202,Personal income tax,2,item,flow,current,1
+2,203,Corporate income tax,2,item,flow,current,1
+2,204,Non-resident income tax,2,item,flow,current,1
+2,205,Total income tax revenues,1,total,flow,current,1
+2,206,Other taxes and duties,1,header,flow,current,1
+2,207,Goods and Services Tax,2,item,flow,current,1
+2,208,Energy taxes,2,item,flow,current,1
+2,209,Customs import duties,2,item,flow,current,1
+2,210,Other excise taxes and duties,2,item,flow,current,1
+2,211,Total other taxes and duties,1,total,flow,current,1
+2,213,Total tax revenues,0,total,flow,current,1
+2,215,Employment Insurance premium revenues,1,item,flow,current,1
+2,217,Other revenues,1,item,flow,current,1
+2,218,Total revenues,0,total,flow,current,1
+2,212,Excise taxes and duties,2,item,flow,discontinued,1
+2,214,Fuel charge proceeds (pollution pricing),1,item,flow,discontinued,1
+2,216,Air Travellers Security Charge,2,item,flow,discontinued,1
+3,300,Transfer payments,0,header,flow,current,1
+3,301,Major transfers to persons,1,header,flow,current,1
+3,304,Elderly benefits (Old Age Security),2,item,flow,current,1
+3,305,Employment Insurance benefits,2,item,flow,current,1
+3,310,Children's benefits,2,item,flow,current,1
+3,311,Total major transfers to persons,1,total,flow,current,1
+3,313,Major transfers to other levels of government,1,header,flow,current,1
+3,318,Canada Health Transfer,2,item,flow,current,1
+3,319,Canada Social Transfer,2,item,flow,current,1
+3,323,Equalization,2,item,flow,current,1
+3,324,Territorial Formula Financing,2,item,flow,current,1
+3,384,Canada-wide early learning and child care,2,item,flow,current,1
+3,325,Canada Community-Building Fund,2,item,flow,current,1
+3,781,Health agreements with provinces and territories,2,item,flow,current,1
+3,327,Other fiscal arrangements,2,item,flow,current,1
+3,328,Total major transfers to other levels of government,1,total,flow,current,1
+3,344,Pollution pricing proceeds returned to Canadians,1,item,flow,current,1
+3,346,Other transfer payments,1,item,flow,current,1
+3,373,Total transfer payments,1,total,flow,discontinued,1
+3,333,Direct program expenses,0,header,flow,current,1
+3,365,Operating expenses,1,item,flow,current,1
+3,368,Total direct program expenses,1,total,flow,current,1
+3,369,"Total program expenses, excluding net actuarial losses",0,total,flow,current,1
+3,370,Public debt charges,1,item,flow,current,1
+3,371,"Total expenses, excluding net actuarial losses",0,total,flow,current,1
+3,372,Net actuarial losses,1,item,flow,current,1
+3,376,Total expenses,0,total,flow,current,1
+3,302,Transfers to persons,1,header,flow,discontinued,1
+3,303,Persons,1,header,flow,discontinued,1
+3,306,Heating expense relief,2,item,flow,discontinued,1
+3,307,Relief for heating expenses,2,item,flow,discontinued,1
+3,308,Canada Emergency Response Benefit and Canada Recovery Benefits,2,item,flow,discontinued,1
+3,309,COVID-19 income support for workers,2,item,flow,discontinued,1
+3,312,Other levels of government,1,header,flow,discontinued,1
+3,314,Transfers to other levels of government,1,header,flow,discontinued,1
+3,315,Support for health and other social programs,1,header,flow,discontinued,1
+3,316,Health Reform Transfer,2,item,flow,discontinued,1
+3,317,Canada Health and Social Transfer,2,item,flow,discontinued,1
+3,321,Early learning and child care,2,item,flow,discontinued,1
+3,322,Total support for health and other social programs,1,total,flow,discontinued,1
+3,326,Home care and mental health,2,item,flow,discontinued,1
+3,329,Fiscal arrangements and other transfers,2,item,flow,discontinued,1
+3,330,Canada's Cities and Communities,2,item,flow,discontinued,1
+3,331,Alternative payments for standing programs,2,item,flow,discontinued,1
+3,332,Medical Equipment Fund,2,item,flow,discontinued,1
+3,334,Transfer payments by department,1,header,flow,discontinued,1
+3,335,Agriculture and Agri-Food Canada,2,item,flow,discontinued,1
+3,336,Employment and Social Development Canada,2,item,flow,discontinued,1
+3,337,Global Affairs Canada,2,item,flow,discontinued,1
+3,338,Health Canada,2,item,flow,discontinued,1
+3,339,Human Resources and Skills Development,2,item,flow,discontinued,1
+3,340,Indigenous and Northern Affairs Canada,2,item,flow,discontinued,1
+3,341,"Innovation, Science and Economic Development Canada",2,item,flow,discontinued,1
+3,342,Veterans Affairs,2,item,flow,discontinued,1
+3,345,Canada Emergency Wage Subsidy,2,item,flow,discontinued,1
+3,348,Other other transfer payments,2,item,flow,discontinued,1
+3,347,Total other transfer payments,1,total,flow,discontinued,1
+3,349,Operating and capital expenditures,1,header,flow,discontinued,1
+3,350,Subsidies and other transfers,1,header,flow,discontinued,1
+3,351,Other subsidies and other transfers,2,item,flow,discontinued,1
+3,352,Other program expenses,1,header,flow,discontinued,1
+3,353,Other other program expenses,2,item,flow,discontinued,1
+3,354,Other direct program expenses,2,item,flow,discontinued,1
+3,355,Payments to Crown corporations,1,header,flow,discontinued,1
+3,356,Crown corporations,2,item,flow,discontinued,1
+3,357,Community Development Trust,2,item,flow,discontinued,1
+3,358,Canada Mortgage and Housing Corporation,2,item,flow,discontinued,1
+3,359,Canadian Broadcasting Corporation,2,item,flow,discontinued,1
+3,360,Other payments to Crown corporations,2,item,flow,discontinued,1
+3,361,Total payments to Crown corporations,1,total,flow,discontinued,1
+3,362,National Defence,2,item,flow,discontinued,1
+3,363,All other departments and agencies,2,item,flow,discontinued,1
+3,364,Total other direct program expenses,1,total,flow,discontinued,1
+3,366,Losses from employee future benefit plans,2,item,flow,discontinued,1
+3,367,Total other program expenses,1,total,flow,discontinued,1
+3,375,Total program expenses,0,total,flow,discontinued,1
+4,400,Transfer payments,1,item,flow,current,1
+4,401,Other expenses,0,header,flow,current,1
+4,403,"Personnel, excluding net actuarial losses",1,item,flow,current,1
+4,404,Transportation and communications,1,item,flow,current,1
+4,405,Information,1,item,flow,current,1
+4,406,Professional and special services,1,item,flow,current,1
+4,407,Rentals,1,item,flow,current,1
+4,408,Repair and maintenance,1,item,flow,current,1
+4,409,"Utilities, materials and supplies",1,item,flow,current,1
+4,410,Other subsidies and expenses,1,item,flow,current,1
+4,411,Amortization of tangible capital assets,1,item,flow,current,1
+4,412,Net loss on disposal of assets,1,item,flow,current,1
+4,413,Total other expenses,0,total,flow,current,1
+4,414,"Total program expenses, excluding net actuarial losses",0,total,flow,current,1
+4,415,Public debt charges,1,item,flow,current,1
+4,416,"Total expenses, excluding net actuarial losses",0,total,flow,current,1
+4,417,Net actuarial losses,1,item,flow,current,1
+4,419,Total expenses,0,total,flow,current,1
+4,402,Personnel,1,item,flow,discontinued,1
+4,418,Total program expenses,0,total,flow,discontinued,1
+5,500,Budgetary balance (deficit/surplus),0,total,flow,current,1
+5,501,Non-budgetary transactions,0,header,flow,current,1
+5,513,Accounts payable and accrued liabilities and accounts receivable,1,item,flow,current,1
+5,515,"Pensions, other future benefits, and other liabilities",1,item,flow,current,1
+5,516,Foreign exchange transactions,1,item,flow,current,1
+5,518,"Loans, investments and advances",1,item,flow,current,1
+5,519,Non-financial assets,1,item,flow,current,1
+5,520,Total non-budgetary transactions,0,total,flow,current,1
+5,522,Financial source/requirement,0,total,flow,current,1
+5,502,Other investing activities,1,item,flow,discontinued,1
+5,503,Canada Pension Plan account,2,item,flow,discontinued,1
+5,504,Crown corporations,2,item,flow,discontinued,1
+5,505,"Total loans, investments and advances",1,total,flow,discontinued,1
+5,506,Specified purpose accounts,1,header,flow,discontinued,1
+5,507,Superannuation accounts,2,item,flow,discontinued,1
+5,508,Other specified purpose accounts,2,item,flow,discontinued,1
+5,509,Total specified purpose accounts,1,total,flow,discontinued,1
+5,510,Other activities,1,header,flow,discontinued,1
+5,511,Other transactions,2,item,flow,discontinued,1
+5,512,Total other activities,1,total,flow,discontinued,1
+5,514,Accounts payable and accrued liabilities and allowances,1,item,flow,discontinued,1
+5,517,Amortization of tangible capital assets,1,item,flow,discontinued,1
+5,521,Net change in financing activities,0,total,flow,discontinued,1
+6,600,Financial source/requirement,0,total,flow,current,1
+6,601,Net increase (+) or decrease (−) in financing activities,0,header,flow,current,1
+6,604,Unmatured debt transactions,1,header,flow,current,1
+6,605,Canadian currency borrowings,2,header,flow,current,1
+6,606,Marketable bonds,3,item,flow,current,1
+6,610,Treasury bills,3,item,flow,current,1
+6,617,Total Canadian currency borrowings,2,total,flow,current,1
+6,619,Foreign currency borrowings,2,item,flow,current,1
+6,623,Total market debt transactions,1,total,flow,current,1
+6,626,Obligations related to capital leases and other unmatured debt,1,item,flow,current,1
+6,628,Net change in financing activities,0,total,flow,current,1
+6,630,Change in cash balance,0,item,flow,current,1
+6,631,Cash balance at end of period,0,total,balance,current,1
+6,602,Net increase (+) or decrease (−) in borrowings,0,header,flow,discontinued,1
+6,603,Payable in Canadian dollars,1,header,flow,discontinued,1
+6,607,Marketable bonds payable in Canadian dollars,3,item,flow,discontinued,1
+6,609,Canada Savings Bonds,3,item,flow,discontinued,1
+6,611,Other,3,item,flow,discontinued,1
+6,612,Subtotal,2,total,flow,discontinued,1
+6,613,Less: government's holdings of unmatured debt,3,item,flow,discontinued,1
+6,614,Other payable in Canadian dollars,3,item,flow,discontinued,1
+6,615,Retail debt,3,item,flow,discontinued,1
+6,618,Payable in foreign currencies,1,header,flow,discontinued,1
+6,608,Marketable bonds payable in foreign currencies,3,item,flow,discontinued,1
+6,620,Notes and loans,3,item,flow,discontinued,1
+6,621,Canada Bills,3,item,flow,discontinued,1
+6,622,Canada Notes,3,item,flow,discontinued,1
+6,624,Cross-currency swap revaluation,1,item,flow,discontinued,1
+6,625,Unamortized discounts and premiums on market debt,1,item,flow,discontinued,1
+6,627,"Pensions, other future benefits, and other liabilities",1,item,flow,discontinued,1
+6,629,Net change in borrowings,0,total,flow,discontinued,1
+7,700,Liabilities,0,header,position,current,1
+7,702,Accounts payable and accrued liabilities,1,item,position,current,1
+7,704,Interest-bearing debt,1,header,position,current,1
+7,708,Unmatured debt,2,header,position,current,1
+7,709,Payable in Canadian dollars,3,header,position,current,1
+7,710,Marketable bonds,3,item,position,current,1
+7,713,Treasury bills,3,item,position,current,1
+7,721,Subtotal,3,total,position,current,1
+7,718,Payable in foreign currencies,3,item,position,current,1
+7,724,Obligations related to capital leases and other unmatured debt,3,item,position,current,1
+7,725,Total unmatured debt,2,total,position,current,1
+7,726,"Pensions, other future benefits, and other liabilities",2,header,position,current,1
+7,727,Public sector pensions,3,item,position,current,1
+7,729,Other employee and veteran future benefits,3,item,position,current,1
+7,730,Other liabilities,3,item,position,current,1
+7,731,Total pension and other accounts,2,total,position,current,1
+7,732,Total interest-bearing debt,1,total,position,current,1
+7,733,Total liabilities,0,total,position,current,1
+7,734,Financial assets,0,header,position,current,1
+7,736,Cash and accounts receivable,1,item,position,current,1
+7,739,"Loans, investments and advances (net of allowances)",1,item,position,current,1
+7,740,Public sector pension assets,1,item,position,current,1
+7,741,Total financial assets,0,total,position,current,1
+7,743,Net debt,0,total,position,current,1
+7,744,Non-financial assets,1,item,position,current,1
+7,745,Federal debt (accumulated deficit),0,total,position,current,1
+7,701,Accounts payable and accrued liabilities and allowances,1,item,position,discontinued,1
+7,703,Interest and matured debt,1,item,position,discontinued,1
+7,705,Allowances,1,item,position,discontinued,1
+7,706,Other payable in Canadian dollars,3,item,position,discontinued,1
+7,711,Marketable bonds payable in Canadian dollars,3,item,position,discontinued,1
+7,712,Marketable bonds payable in foreign currencies,3,item,position,discontinued,1
+7,714,Canada Savings Bonds,3,item,position,discontinued,1
+7,715,Non-marketable bonds and bills,3,item,position,discontinued,1
+7,716,Other,3,item,position,discontinued,1
+7,717,Retail debt,3,item,position,discontinued,1
+7,719,Canada Bills,3,item,position,discontinued,1
+7,720,Canada Notes,3,item,position,discontinued,1
+7,722,Cross-currency swap revaluation,3,item,position,discontinued,1
+7,723,Unamortized discounts and premiums on market debt,3,item,position,discontinued,1
+7,728,Canada Pension Plan (net of securities),3,item,position,discontinued,1
+7,735,Assets,0,header,position,discontinued,1
+7,737,Foreign exchange accounts,1,item,position,discontinued,1
+7,738,"Loans, investments and advances",1,item,position,discontinued,1
+7,742,Total assets,0,total,position,discontinued,1

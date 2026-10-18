@@ -1,0 +1,4 @@
+# Keep files byte-for-byte as committed (the CSV uses CRLF line endings)
+*.csv -text
+*.html -text
+*.js -text

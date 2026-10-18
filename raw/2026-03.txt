@@ -1,0 +1,34 @@
+# Fiscal Monitor transcription (Table 7 only; used to test the Table 7 parser)
+# report: 2026-03
+# source: https://www.canada.ca/en/department-finance/services/publications/fiscal-monitor/2026/03.html
+# transcribed: 2026-10-18 (pipeline test)
+T7 | Liabilities
+T7 | Accounts payable and accrued liabilities | 259,725 | 277,126 | 17,401
+T7 | Interest-bearing debt
+T7 | Unmatured debt
+T7 | Payable in Canadian currency
+T7 | Marketable bonds | 1,169,397 | 1,280,472 | 111,075
+T7 | Treasury bills | 282,252 | 283,422 | 1,170
+T7 | Subtotal | 1,451,649 | 1,563,894 | 112,245
+T7 | Payable in foreign currencies | 29,557 | 23,155 | -6,402
+T7 | Obligations related to capital leases and other unmatured debt | 4,681 | 4,723 | 42
+T7 | Total unmatured debt | 1,485,887 | 1,591,772 | 105,885
+T7 | Pension and other liabilities
+T7 | Public sector pensions | 162,746 | 153,125 | -9,621
+T7 | Other employee and veteran future benefits | 213,667 | 234,126 | 20,459
+T7 | Other liabilities | 7,031 | 7,738 | 707
+T7 | Total pension and other liabilities | 383,444 | 394,989 | 11,545
+T7 | Total interest-bearing debt | 1,869,331 | 1,986,761 | 117,430
+T7 | Foreign exchange accounts liabilities | 47,697 | 46,333 | -1,364
+T7 | Derivatives1 | 5,583 | 5,267 | -316
+T7 | Total liabilities | 2,182,336 | 2,315,487 | 133,151
+T7 | Financial assets
+T7 | Cash and accounts receivable | 281,394 | 286,586 | 5,192
+T7 | Foreign exchange accounts assets | 201,362 | 194,687 | -6,675
+T7 | Derivatives1 | 1,752 | 1,664 | -88
+T7 | Loans, investments, and advances (net of allowances)2 | 278,520 | 340,597 | 62,077
+T7 | Public sector pension assets | 25,722 | 24,818 | -904
+T7 | Total financial assets | 788,750 | 848,352 | 59,602
+T7 | Net debt | 1,393,586 | 1,467,135 | 73,549
+T7 | Non-financial assets | 127,102 | 145,131 | 18,029
+T7 | Federal debt (accumulated deficit) | 1,266,484 | 1,322,004 | 55,520

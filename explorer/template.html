@@ -1,0 +1,1503 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fiscal Monitor Explorer</title>
+<meta name="description" content="Finances of the Nation: the federal government's monthly revenues, expenses, budgetary balance and financing, from the Department of Finance Canada's Fiscal Monitor.">
+<link rel="license" href="https://creativecommons.org/licenses/by/4.0/">
+<!--
+  Finances of the Nation -- Fiscal Monitor Explorer
+  -------------------------------------------------
+  This is the editable template. It runs as-is when opened in a browser
+  (after build.R has written data.js). build.R inlines data.js, model.js
+  and the logo into a single self-contained fiscal_monitor.html.
+
+  Where things live:
+    * ../fiscalmon-clean.csv -> the dataset (append each new month)
+    * data/items.csv         -> every line: label, indentation, type, current or discontinued
+    * data/tables.csv        -> the seven tables' titles and notes
+    * model.js               -> the measures (changes, 12-month totals)
+    * this file              -> layout (HTML), styling (CSS) and the interface (JS below)
+-->
+<style>
+  :root {
+    --fon-red: #a71e23;
+    --ink: #1f2328;
+    --ink-2: #4a5059;
+    --muted: #6b717b;
+    --line: #e2e4e8;
+    --line-2: #eef0f2;
+    --surface: #ffffff;
+    --panel: #f7f7f8;
+    --accent: #396ab1;
+    --accent-weak: #e8eef8;
+    --radius: 8px;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--surface); color: var(--ink); font: 15px/1.5 var(--font); }
+  a { color: var(--accent); }
+  button, input, select { font: inherit; color: inherit; }
+
+  .wrap { max-width: 1320px; margin: 0 auto; padding: 20px 20px 40px; }
+
+  /* ---------- Masthead ---------- */
+  .masthead { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 28px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+  .masthead img { height: 34px; width: auto; display: block; }
+  .masthead h1 { margin: 0; font-size: 22px; line-height: 1.2; font-weight: 650; color: var(--fon-red); letter-spacing: -0.01em; }
+  .intro { margin: 14px 0 20px; max-width: 900px; color: var(--ink-2); font-size: 14.5px; }
+  .intro p { margin: 0 0 8px; }
+  .intro > summary { display: none; }
+  .narrow .intro { margin: 10px 0 12px; }
+  .narrow .intro > summary { display: list-item; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--accent); padding: 2px 0; }
+  .narrow .intro[open] > summary { margin-bottom: 6px; }
+
+  /* ---------- Layout ---------- */
+  /* Wide (two columns, settings on the left) or narrow (results first, settings docked below the
+     chart). The script sets html.narrow and html.phone from the tool's own width, so this follows
+     the iframe or page column rather than the screen. */
+  .layout { display: grid; grid-template-columns: clamp(300px, 27vw, 350px) minmax(0, 1fr); gap: 28px; align-items: start; }
+  main { min-width: 0; }
+  body { position: relative; }
+
+  .sidebar { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow-y: auto; overscroll-behavior: contain; }
+  html.emb .sidebar { position: relative; top: 0; max-height: none; }
+  .narrow .layout { display: flex; flex-direction: column; gap: 16px; }
+  .narrow main { order: 1; width: 100%; }
+  .narrow .sidebar { order: 2; width: 100%; position: static; max-height: none; overflow: visible; padding: 12px 14px 14px; }
+  .narrow.notes-on .sidebar, .narrow.notes-on .scope { display: none; }
+  .dock-head { display: none; }
+  .narrow .dock-head { display: block; margin: 12px 0 10px; }
+  .dock-title { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-2); margin: 0 0 8px; font-weight: 650; }
+  .dock-tabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+  .dock-tabs::-webkit-scrollbar { display: none; }
+  .dock-tabs button { flex: 1 0 auto; border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 7px 10px; font-size: 13.5px; font-weight: 600; color: var(--ink-2); cursor: pointer; white-space: nowrap; }
+  .dock-tabs button[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .dock-tabs button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .narrow .sidebar [data-pane] { display: none; }
+  .narrow .sidebar [data-pane].on { display: block; }
+  .narrow .sidebar .pane-sep, .narrow .sidebar .pane-title, .narrow details.dl > summary { display: none; }
+  .narrow .sidebar [data-pane] > div:first-child > h2:first-child, .narrow .sidebar [data-pane] > h2:first-child { margin-top: 2px; }
+
+  /* Narrow screens: the government buttons sit above the headline numbers */
+  .scope:empty { display: none; }
+  .scope { margin-bottom: 12px; }
+  .scope #gov-box { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .scope h2 { display: flex; align-items: center; margin: 0 4px 0 0; font-size: 13.5px; font-weight: 600; }
+  .scope .ptabs, .scope .ptabs.three { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; }
+  .scope .ptabs .ptab { min-width: 40px; padding: 5px 8px; }
+  .scope .ptabs.three .ptab { width: auto; padding: 5px 10px; font-size: 13px; }
+  .phone .scope h2 { width: 100%; }
+  .phone .scope .ptabs.three { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; }
+  .phone .scope .ptabs:not(.three) { display: grid; grid-template-columns: repeat(7, 1fr); width: 100%; }
+  .phone .scope .ptabs .ptab { width: auto; }
+
+  /* Slim bar with the headline numbers, pinned once they scroll out of view */
+  .pin { position: absolute; left: 0; right: 0; top: 0; z-index: 15; background: rgba(255,255,255,.97); border-bottom: 1px solid var(--line); box-shadow: 0 2px 10px rgba(0,0,0,.07); display: none; }
+  html:not(.emb) .pin { position: fixed; }
+  .pin.show { display: block; }
+  .pin-in { max-width: 1320px; margin: 0 auto; padding: 7px 20px; display: flex; gap: 4px 18px; align-items: center; flex-wrap: wrap; font-size: 13px; }
+  .pin-k { display: inline-flex; align-items: baseline; gap: 6px; min-width: 0; max-width: 100%; }
+  .pin-l { color: var(--muted); font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 300px; }
+  .pin-k b { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .pin-go { margin-left: auto; padding: 4px 10px; font-size: 12.5px; }
+  .phone .wrap { padding: 16px 16px 32px; }
+  /* Embedded in a Finances of the Nation page: the page supplies the logo, title and side margins */
+  .embedded .masthead { display: none; }
+  .embedded .wrap, .embedded.phone .wrap { padding: 4px 0 24px; }
+  .embedded .intro { margin-top: 0; }
+  .embedded .pin-in { padding-left: 0; padding-right: 0; }
+  .phone .dock-tabs button { padding: 6px 8px; font-size: 13px; }
+  .phone .pin-in { padding: 6px 12px; gap: 2px 12px; font-size: 12.5px; }
+  .phone .pin-l { max-width: 170px; }
+  .narrow .pin-k:nth-child(3) { display: none; }
+  .narrow .pin-l { max-width: 230px; }
+  /* Narrow screens: the report month sits above the headline numbers */
+  .scope #mon-box { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+  .scope #mon-box h2 { margin: 0; }
+  .scope #mon-box select { width: auto; margin: 0; }
+  .scope #mon-box .hint { width: 100%; margin-top: 0; }
+  .sidebar h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-2); margin: 18px 0 8px; font-weight: 650; }
+  .sidebar hr { border: 0; border-top: 1px solid var(--line); margin: 16px 0; }
+  .sub { font-size: 12px; font-weight: 650; color: var(--muted); margin: 12px 0 4px; }
+  .hint { font-size: 12px; color: var(--muted); line-height: 1.35; margin-top: 4px; }
+
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 6px 12px; cursor: pointer; font-size: 13.5px; }
+  .btn:hover { border-color: #c9ccd2; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.primary:hover { background: #2f5b9c; }
+  .btn svg { width: 14px; height: 14px; }
+  .btn.full { width: 100%; justify-content: center; }
+  .btn:focus-visible, .tab:focus-visible, .seg button:focus-visible, .x:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .field { margin: 8px 0; }
+  select { width: 100%; margin-top: 4px; padding: 7px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); font-size: 14px; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .pair label { font-size: 13px; font-weight: 600; }
+
+  /* ---------- Segmented controls ---------- */
+  .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+  .seg.four { grid-template-columns: repeat(4, 1fr); margin-top: 8px; }
+  .seg button { position: relative; border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 5px 0; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .seg button[aria-checked="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  /* ---------- Line checklist ---------- */
+  /* Collapsible line picker: a closed summary that looks like the selects, a checklist when open */
+  .picker summary { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 7px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); font-size: 14px; cursor: pointer; }
+  .picker summary::-webkit-details-marker { display: none; }
+  .picker summary svg { width: 14px; height: 14px; flex: none; color: var(--ink-2); transition: transform .15s; }
+  .picker[open] summary { border-color: var(--accent); }
+  .picker[open] summary svg { transform: rotate(180deg); }
+  .picker summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .picker-foot { display: flex; align-items: flex-start; gap: 10px; margin-top: 6px; }
+  .picker-foot .hint { margin-top: 0; flex: 1; }
+  .picker-foot .btn { flex: none; padding: 4px 12px; }
+  .itemlist { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; max-height: 320px; overflow-y: auto; padding: 4px 0; margin-top: 4px; }
+  .itemlist .grp { font-size: 11.5px; font-weight: 650; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); padding: 8px 10px 2px; }
+  .itemlist .hdr { font-size: 12.5px; font-weight: 650; color: var(--ink-2); padding: 5px 10px 1px; }
+  .itemlist label { display: flex; align-items: center; gap: 8px; padding: 3px 10px; font-size: 13.5px; cursor: pointer; line-height: 1.3; }
+  .itemlist label:hover { background: var(--accent-weak); }
+  .itemlist input { accent-color: var(--accent); margin: 0; flex: none; }
+  .itemlist .sw { width: 9px; height: 9px; border-radius: 2px; flex: none; margin-left: auto; }
+  .itemlist .yrs { font-size: 11.5px; color: var(--muted); white-space: nowrap; margin-left: auto; padding-left: 6px; font-variant-numeric: tabular-nums; }
+  .itemlist .sw + .yrs { margin-left: 4px; }
+  .itemlist label.tot span:first-of-type { font-weight: 600; }
+  .lvl1 { padding-left: 22px !important; } .lvl2 { padding-left: 36px !important; } .lvl3 { padding-left: 50px !important; }
+
+  .chosen { list-style: none; margin: 8px 0 0; padding: 0; font-size: 12.5px; color: var(--ink-2); }
+  .chosen li { display: flex; align-items: center; gap: 7px; padding: 2px 0; line-height: 1.3; }
+  .chosen .sw { width: 9px; height: 9px; border-radius: 2px; flex: none; }
+  .chosen .t { color: var(--muted); white-space: nowrap; }
+  .chosen .x { margin-left: auto; border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 15px; line-height: 1; padding: 0 2px; border-radius: 4px; }
+  .chosen .x:hover { color: var(--ink); }
+
+  /* ---------- Switches ---------- */
+  .switch { display: grid; grid-template-columns: 36px 1fr; gap: 2px 10px; align-items: start; margin: 10px 0 4px; cursor: pointer; position: relative; }
+  .switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .switch .track { grid-row: 1 / span 2; margin-top: 2px; width: 36px; height: 20px; border-radius: 10px; background: #c9ccd2; position: relative; transition: background .15s; }
+  .switch .track::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.2); transition: transform .15s; }
+  .switch input:checked + .track { background: var(--accent); }
+  .switch input:checked + .track::after { transform: translateX(16px); }
+  .switch input:focus-visible + .track { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .switch .lbl { font-size: 13.5px; font-weight: 600; }
+  .switch .hint { margin-top: 0; }
+
+  /* ---------- Main ---------- */
+  .kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .narrow .kpis { gap: 8px; margin-bottom: 12px; }
+  .narrow .kpi { padding: 9px 11px; }
+  .narrow .kpi .v { font-size: 19px; }
+  .narrow .kpi .d { font-size: 12px; line-height: 1.4; }
+  /* phones: one compact row per number; the details are in the chart notes and table */
+  .phone .kpis { grid-template-columns: minmax(0, 1fr); gap: 0; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  .phone .kpi { display: flex; justify-content: space-between; align-items: center; gap: 10px; border: 0; border-radius: 0; padding: 7px 12px; }
+  .phone .kpi + .kpi { border-top: 1px solid var(--line-2); }
+  .phone .kpi .k { flex: 1; min-width: 0; line-height: 1.3; }
+  .phone .kpi .v { font-size: 16px; text-align: right; white-space: nowrap; }
+  .phone .kpi .d { display: none; }
+  .kpi { border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 14px; min-width: 0; }
+  .kpi .k { font-size: 12.5px; color: var(--muted); }
+  .kpi .v { font-size: 22px; font-weight: 650; font-variant-numeric: tabular-nums; line-height: 1.25; }
+  .kpi .d { font-size: 12.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+
+  .tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--line); margin-bottom: 14px; overflow-x: auto; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  /* fade at the edge when more tabs are off to the side */
+  .tabs.more-r { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); }
+  .tabs.more-l { -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(to left, #000 calc(100% - 36px), transparent); }
+  .tabs.more-l.more-r { -webkit-mask-image: linear-gradient(to right, transparent, #000 36px, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(to right, transparent, #000 36px, #000 calc(100% - 36px), transparent); }
+  .tab { flex: none; white-space: nowrap; border: 0; background: none; padding: 9px 9px; font-size: 13.5px; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; }
+  .phone .tab { padding: 8px 7px; font-size: 13px; }
+  .tab:hover { color: var(--ink); }
+  .tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--fon-red); }
+  .panel[hidden] { display: none; }
+  .chart { width: 100%; min-height: 300px; }
+  .chart svg { display: block; width: 100%; height: auto; }
+  .panel-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+
+  /* ---------- Tables ---------- */
+  .tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); max-height: 640px; overflow-y: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+  th, td { padding: 7px 10px; text-align: right; white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; }
+  td:first-child { white-space: normal; min-width: 200px; }
+  thead th { position: sticky; top: 0; font-size: 12px; font-weight: 650; color: var(--ink-2); background: var(--panel); border-bottom: 1px solid var(--line); white-space: normal; vertical-align: bottom; min-width: 76px; }
+  thead th:first-child { min-width: 0; }
+  tbody tr + tr td { border-top: 1px solid var(--line-2); }
+  tbody tr.total td { border-top: 1px solid var(--line); font-weight: 650; background: #fbfbfc; }
+  tbody tr.grp td { font-weight: 650; color: var(--ink-2); padding-top: 10px; }
+  td.l1 { padding-left: 24px; } td.l2 { padding-left: 38px; } td.l3 { padding-left: 52px; }
+  td.neg { color: #9b2226; }
+  td.pos { color: #1f5a2d; }
+  td.na { color: var(--muted); }
+  .tbl-note { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+  /* ---------- Notes ---------- */
+  .notes { max-width: 900px; font-size: 14px; color: var(--ink-2); }
+  .notes h3 { font-size: 15px; color: var(--ink); margin: 22px 0 6px; font-weight: 650; }
+  .notes h3:first-child { margin-top: 4px; }
+  .notes p { margin: 0 0 10px; }
+  .notes ul { margin: 0 0 10px; padding-left: 20px; }
+  .notes li { margin: 0 0 4px; }
+  .callout { background: #fff8ec; border: 1px solid #f1dfbf; border-radius: var(--radius); padding: 10px 14px; font-size: 13.5px; color: var(--ink-2); margin-bottom: 12px; }
+  .callout[hidden] { display: none; }
+
+  /* ---------- Footer ---------- */
+  .footer { margin-top: 28px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--muted); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .footer svg { width: 18px; height: 18px; flex: none; }
+
+  /* ---------- Tooltip ---------- */
+  #tip { position: fixed; z-index: 10; pointer-events: none; background: #fff; border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 4px 16px rgba(0,0,0,.12); padding: 8px 10px; font-size: 12.5px; min-width: 190px; max-width: 340px; opacity: 0; transition: opacity .08s; }
+  #tip.on { opacity: 1; }
+  #tip .t { font-weight: 650; margin-bottom: 4px; }
+  #tip .r { display: flex; justify-content: space-between; gap: 14px; font-variant-numeric: tabular-nums; }
+  #tip .r span:first-child { color: var(--muted); display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
+  #tip .r span:last-child { white-space: nowrap; }
+  #tip .sw { width: 9px; height: 9px; border-radius: 2px; display: inline-block; flex: none; }
+
+  .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--ink); color: #fff; padding: 8px 14px; border-radius: 6px; font-size: 13px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 20; }
+  .toast.on { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* tab row: arrow buttons for mouse users when tabs are off to the side (touch screens swipe instead) */
+.tabs-wrap{position:relative}
+.tab-arrow{display:none;position:absolute;top:0;z-index:2;width:30px;padding:0 0 2px;border:0;background:var(--surface);color:var(--ink-2);font-size:22px;line-height:1;cursor:pointer}
+.tab-arrow:hover{color:var(--accent)}
+.tab-arrow.l{left:0;box-shadow:8px 0 8px -6px rgba(0,0,0,.18)}
+.tab-arrow.r{right:0;box-shadow:-8px 0 8px -6px rgba(0,0,0,.18)}
+@media (hover:hover) and (pointer:fine){.tabs-wrap.more-l .tab-arrow.l,.tabs-wrap.more-r .tab-arrow.r{display:block}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <a href="https://financesofthenation.ca/" target="_top"><img id="fon-logo" src="FON_logo.png" alt="Finances of the Nation"></a>
+    <h1>Fiscal Monitor Explorer</h1>
+  </header>
+
+  <details class="intro" id="intro" open>
+    <summary>About this explorer and how to use it</summary>
+    <p>This tool tracks the federal government's finances month by month, as reported in the Department of Finance Canada's <i>Fiscal Monitor</i>, from <span class="m-first"></span> to <span class="m-last"></span>: revenues, expenses, the budgetary balance, borrowing and the balance sheet. It opens on 12-month totals of revenues and expenses over the whole period, with headline results from the latest report (<span class="m-last"></span>).</p>
+    <p><b>To use it,</b> pick lines from any of the seven Fiscal Monitor tables and choose how to measure them: monthly or year-to-date amounts, changes from a year or a month earlier, or 12-month totals, in dollars, inflation-adjusted dollars, per person or as a share of GDP. <b>Versus last year</b> sets every line of a table against the same period a year earlier, and <b>Monthly statement</b> shows the whole table as published in any month. Definitions, gaps and changes in the tables are in the <a href="#notes" data-goto="notes">Notes</a>.</p>
+  </details>
+
+  <div class="layout">
+    <!-- ===================== Sidebar ===================== -->
+    <aside class="sidebar" aria-label="Explorer settings">
+      <div class="btn-row">
+        <button class="btn primary" id="reset" type="button">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2.5 8a5.5 5.5 0 1 0 1.7-4"/><path d="M2.5 2.5v3h3"/></svg>
+          Reset</button>
+        <button class="btn" id="share" type="button">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6.5 9.5l3-3"/><path d="M7 4.5l1.3-1.3a2.8 2.8 0 0 1 4 4L11 8.5"/><path d="M9 11.5l-1.3 1.3a2.8 2.8 0 0 1-4-4L5 7.5"/></svg>
+          Copy link to this view</button>
+      </div>
+      <div class="dock-head" id="dock-head"></div>
+
+      <div data-pane="show">
+      <div id="mon-box">
+      <h2><label for="mon">Report month</label></h2>
+      <select id="mon"></select>
+      <div class="hint">The headline cards, <b>Versus last year</b> and <b>Monthly statement</b> use this month's report.</div>
+      </div>
+
+      <h2 id="tbl-h2"><label for="tbl">Table</label></h2>
+      <select id="tbl"></select>
+
+      <h2 id="lines-head">Lines over time</h2>
+      <details class="picker" id="picker">
+        <summary aria-describedby="lines-head"><span id="picker-label">Choose lines</span>
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></summary>
+        <div class="itemlist" id="itemlist" role="group" aria-labelledby="lines-head"></div>
+        <div class="picker-foot">
+          <span class="hint">Up to 8 lines, from any table. Totals include the lines above them, so don't add them together.</span>
+          <button class="btn" type="button" id="picker-done">Done</button>
+        </div>
+      </details>
+      <ul class="chosen" id="chosen" aria-label="Lines shown over time"></ul>
+
+      <hr>
+      <h2 id="val-head">Values</h2>
+      <div class="seg" role="radiogroup" aria-labelledby="val-head">
+        <button type="button" role="radio" data-col="m">Monthly</button>
+        <button type="button" role="radio" data-col="ytd">Year to date</button>
+      </div>
+      <div class="hint" id="col-hint"></div>
+
+      <h2><label for="units">Units</label></h2>
+      <select id="units"></select>
+      <div class="hint" id="units-hint"></div>
+
+      <h2><label for="meas">Measure</label></h2>
+      <select id="meas"></select>
+      <div class="hint" id="meas-hint"></div>
+      </div>
+
+      <div data-pane="years">
+      <hr class="pane-sep">
+      <h2 class="pane-title">Months (over time)</h2>
+      <div class="pair">
+        <div><label for="from">From</label><select id="from"></select></div>
+        <div><label for="to">To</label><select id="to"></select></div>
+      </div>
+      <div class="seg four" role="group" aria-label="Quick range">
+        <button type="button" data-span="24">2 years</button>
+        <button type="button" data-span="60">5 years</button>
+        <button type="button" data-span="120">10 years</button>
+        <button type="button" data-span="0">All</button>
+      </div>
+      </div>
+
+      <div data-pane="dl">
+      <hr class="pane-sep">
+      <button class="btn full" type="button" id="dl-all">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 2.5v8"/><path d="M4.5 7.5L8 11l3.5-3.5"/><path d="M2.5 13.5h11"/></svg>
+        Download the full dataset (CSV)</button>
+      </div>
+    </aside>
+
+    <!-- ===================== Main ===================== -->
+    <main>
+      <div class="scope" id="scope"></div>
+      <div class="kpis" id="kpis" aria-live="polite">
+        <div class="kpi"><div class="k" id="kpi1-k">&nbsp;</div><div class="v" id="kpi1-v">&ndash;</div><div class="d" id="kpi1-d">&nbsp;</div></div>
+        <div class="kpi"><div class="k" id="kpi2-k">&nbsp;</div><div class="v" id="kpi2-v">&ndash;</div><div class="d" id="kpi2-d">&nbsp;</div></div>
+        <div class="kpi"><div class="k" id="kpi3-k">&nbsp;</div><div class="v" id="kpi3-v">&ndash;</div><div class="d" id="kpi3-d">&nbsp;</div></div>
+      </div>
+
+      <div class="tabs" role="tablist" aria-label="Views">
+        <button class="tab" role="tab" data-tab="time" aria-selected="true">Over time</button>
+        <button class="tab" role="tab" data-tab="yoy" aria-selected="false">Versus last year</button>
+        <button class="tab" role="tab" data-tab="ttime" aria-selected="false">Table: over time</button>
+        <button class="tab" role="tab" data-tab="stmt" aria-selected="false">Monthly statement</button>
+        <button class="tab" role="tab" data-tab="notes" aria-selected="false">Notes</button>
+      </div>
+
+      <section class="panel" data-panel="time">
+        <div class="callout" id="time-callout" hidden></div>
+        <div class="chart" id="chart-time"></div>
+        <div class="panel-actions"><button class="btn" type="button" data-png="chart-time">Download PNG</button></div>
+      </section>
+      <section class="panel" data-panel="yoy" hidden>
+        <div class="callout" id="yoy-callout" hidden></div>
+        <div class="chart" id="chart-yoy"></div>
+        <div class="panel-actions"><button class="btn" type="button" data-png="chart-yoy">Download PNG</button></div>
+      </section>
+      <section class="panel" data-panel="ttime" hidden>
+        <div class="tbl-wrap"><table id="table-time"></table></div>
+        <div class="tbl-note" id="ttime-note"></div>
+        <div class="panel-actions"><button class="btn" type="button" data-csv="time">Download CSV</button></div>
+      </section>
+      <section class="panel" data-panel="stmt" hidden>
+        <div class="tbl-wrap"><table id="table-stmt"></table></div>
+        <div class="tbl-note" id="stmt-note"></div>
+        <div class="panel-actions"><button class="btn" type="button" data-csv="stmt">Download CSV</button></div>
+      </section>
+
+      <section class="panel notes" data-panel="notes" hidden>
+        <h3 id="n-about">What the data are</h3>
+        <p>The <a href="https://www.canada.ca/en/department-finance/services/publications/fiscal-monitor.html" target="_blank" rel="noopener"><i>Fiscal Monitor</i></a> is the Department of Finance Canada's monthly report on the federal government's financial results. Each report gives the month's figures and the fiscal year to date, each beside the same period a year earlier. This tool holds every report from <span class="m-first"></span> to <span class="m-last"></span>, compiled by Finances of the Nation.</p>
+        <p>The figures are unaudited. Results for a full fiscal year are finalized later in the <i>Annual Financial Report</i> and the <i>Public Accounts of Canada</i>, so the last months of a fiscal year in particular can differ from the final numbers. Fiscal years run from April to March: 2026/27 runs from April 1, 2026 to March 31, 2027. All amounts are in millions of dollars, not adjusted for inflation.</p>
+
+        <h3 id="n-tables">The seven tables</h3>
+        <ul>
+          <li><b>Table 1, Summary statement of transactions:</b> revenues, program expenses, public debt charges, the budgetary balance, and how the balance and non-budgetary transactions add up to the financial source or requirement. Finance Canada shows expenses, public debt charges and net actuarial losses as negative numbers in this table; here they are positive, as in Tables 3 and 4, so a rise in spending shows as a rise. The budgetary balance keeps its sign: a deficit is negative.</li>
+          <li><b>Table 2, Revenues:</b> by source. <b>Table 3, Expenses:</b> by program. <b>Table 4, Total expenses by object of expense</b> (personnel, rentals, transfers and so on), from April 2018.</li>
+          <li><b>Table 5</b> links the budgetary balance to the financial source or requirement, and <b>Table 6</b> shows how it was financed: borrowing by instrument and the change in cash. Positive numbers are a net source of funds and negative numbers a net requirement.</li>
+          <li><b>Table 7, Condensed statement of assets and liabilities:</b> balances at the end of the month against March 31 of the previous fiscal year. It is not in every report; it usually appears once the previous year's accounts are published.</li>
+        </ul>
+
+        <h3 id="n-measures">Measures</h3>
+        <ul>
+          <li><b>Monthly</b> uses the month's figures and <b>Year to date</b> the fiscal-year-to-date figures, from April to the report month. In April the two are the same, so where an April year-to-date figure is missing from the dataset the monthly figure is used.</li>
+          <li><b>Change from a year earlier</b> compares with the prior-year figure <em>as published in the same report</em>. Finance Canada sometimes restates prior-year figures, so this can differ from the change between two reports a year apart.</li>
+          <li><b>Change from the previous month</b> compares two consecutive reports, so it is blank where a month is missing. In <b>Year to date</b>, it shows the month's addition to the year-to-date total (and resets each April).</li>
+          <li><b>12-month total</b> adds up the last twelve monthly figures, ending in the month shown. It smooths out the strong seasonal pattern in monthly revenue and spending and needs all twelve months.</li>
+          <li>Per cent changes divide by the absolute value of the earlier figure, so a deficit that shrinks shows as a positive change.</li>
+          <li>Cash balances (Tables 1 and 6) are published only in the year-to-date columns, and Table 7 only as balances; they are the same in both views. For Table 7 lines, the comparison is with March 31 of the previous fiscal year, not with the same month a year earlier.</li>
+        </ul>
+
+        <h3 id="n-units">Units</h3>
+        <ul>
+          <li><b>Millions of dollars</b> are the amounts as published, not adjusted for inflation.</li>
+          <li><b>Millions of <span class="base-yr"></span> dollars</b> divide by Canada's consumer price index, set to average 100 in <span class="base-yr"></span>. A year-to-date or 12-month amount is divided by the average index over the months it covers.</li>
+          <li><b>Dollars per person</b> divide by Canada's population, averaged over the months covered. Monthly amounts are per person per month; year-to-date and 12-month amounts are per person over those months.</li>
+          <li><b><span class="base-yr"></span> dollars per person</b> make both adjustments.</li>
+          <li><b>Per cent of GDP</b> divides by nominal GDP over the same months, so a monthly amount is compared with one month's GDP and a 12-month total with a year's. Balances (cash and Table 7) are divided by GDP over the past 12 months.</li>
+          <li>Changes are taken after the adjustment, so the change from a year earlier in <span class="base-yr"></span> dollars is a real change, and the change in per cent of GDP is in percentage points.</li>
+          <li><b>Where the adjustments come from.</b> GDP, population and the consumer price index are annual series from the <a href="https://github.com/FONCanada/FONmacro" target="_blank" rel="noopener">FON macro database</a>, which draws on Statistics Canada. They are turned into monthly series that run in straight lines between mid-year points, with those points set so that each calendar year's months average to the annual figure (so a calendar year's 12-month total as a share of GDP matches the annual ratio). Months after the middle of <span class="macro-last"></span> continue the <span class="macro-growth"></span> growth rates until the next annual data are published, so recent adjusted figures will be revised.</li>
+        </ul>
+
+        <h3 id="n-breaks">Gaps and changes in the tables</h3>
+        <ul>
+          <li><b>Missing reports.</b> Tables 1, 2 and 5 are missing for most months of 2005 and 2006 (January to November 2005 and all of 2006), and a few months of Table 3 are missing then too. Lines break where a month is missing, and 12-month totals are blank until twelve months are available again.</li>
+          <li><b>Combined releases.</b> Some reports cover two months at once (April and May 2025, for example). The end-of-April cash balance, which those releases leave out, is derived as the end-of-May balance less May's change in cash.</li>
+          <li><b>Net actuarial losses.</b> Since September 2020, the reports show net actuarial losses on public sector pensions and other employee benefits separately. <b>Program expenses</b> in Table 1 is kept on the earlier, all-in definition: program expenses excluding net actuarial losses plus net actuarial losses.</li>
+          <li><b>Lines that come and go.</b> The tables have been reorganized several times, most notably in April 2018, when the department-by-department breakdown of transfers and operating spending in Table 3 was replaced. Lines that are no longer published are listed under <b>Discontinued lines</b>, with the years they cover.</li>
+          <li><b>Pollution pricing.</b> Fuel charge proceeds (Table 2) were published until March 2026. From April 2026, Finance Canada folds them, and COVID-19 income support for workers (Table 3), into other revenues and other transfer payments, restating the prior-year figures to match.</li>
+          <li><b>Renamed lines.</b> Lines keep one name throughout. Elderly benefits now appear in the report as the Old Age Security program, and the Canada Community-Building Fund as the Build Communities Strong Fund (Community Stream).</li>
+          <li>Totals may not add up exactly because of rounding in the published tables. Foreign exchange and derivative assets and liabilities in Table 7 are not included.</li>
+        </ul>
+
+        <h3 id="n-source">Source</h3>
+        <p>Department of Finance Canada, <a href="https://www.canada.ca/en/department-finance/services/publications/fiscal-monitor.html" target="_blank" rel="noopener"><i>The Fiscal Monitor</i></a>, monthly issues from <span class="m-first"></span>. Each month's report is at <code>canada.ca/en/department-finance/services/publications/fiscal-monitor/YYYY/MM.html</code>. GDP, population and prices: Finances of the Nation, <a href="https://github.com/FONCanada/FONmacro" target="_blank" rel="noopener">FON macro database</a>, from Statistics Canada.</p>
+
+        <h3 id="n-cite">How to cite</h3>
+        <p id="cite"></p>
+        <p><b>Questions or comments?</b> Please email Trevor Tombe (University of Calgary) at <span id="contact"></span>.</p>
+
+        <h3 id="n-licence">Licence</h3>
+        <p>This tool and its compiled dataset are licensed under a <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">Creative Commons Attribution 4.0 International licence (CC BY 4.0)</a>. You may share and adapt them for any purpose, including commercially, as long as you give appropriate credit (see How to cite), link to the licence and say if you made changes. The underlying data from the Department of Finance Canada remain under the <a href="https://open.canada.ca/en/open-government-licence-canada" target="_blank" rel="noopener">Open Government Licence &ndash; Canada</a>, and the Statistics Canada data behind GDP, population and prices under the <a href="https://www.statcan.gc.ca/en/reference/licence" target="_blank" rel="noopener">Statistics Canada Open Licence</a>.</p>
+      </section>
+    </main>
+  </div>
+
+  <div class="footer">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10.6 9.6a2.6 2.6 0 1 0 0 4.8M16.4 9.6a2.6 2.6 0 1 0 0 4.8" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="6.6" r="1.7" fill="currentColor"/><path d="M9.3 9.6h5.4v4.6h-1.5v4.4h-2.4v-4.4H9.3z" fill="currentColor"/></svg>
+    <span>&copy; <span id="lic-year"></span> Finances of the Nation. Licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>. You may share and adapt this material with attribution.</span>
+  </div>
+</div>
+<div class="pin" id="pin"><div class="pin-in" id="pin-in"></div></div>
+<div id="tip" role="tooltip"></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="data.js"></script>
+<script src="model.js"></script>
+<script>
+(function () {
+  'use strict';
+  var D = window.FM_DATA, M = window.FMModel;
+
+  /* ======================================================================
+     Configuration
+     ====================================================================== */
+  var COLORS = ['#396ab1', '#cc2529', '#da7c30', '#535154', '#6b4c9a', '#3e9651', '#922428', '#948b3d'];
+  var MAX_SERIES = COLORS.length;
+  var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  var MON3 = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  var ITEMS = D.items, ITEM = {}; ITEMS.forEach(function (it) { ITEM[it.id] = it; });
+  var TABLES = D.tables, TABLE = {}; TABLES.forEach(function (t) { TABLE[t.table] = t; });
+  var MEAS = {}; M.MEASURES.forEach(function (m) { MEAS[m.id] = m; });
+  var UNITS = M.units(D), UNIT = {}; UNITS.forEach(function (u) { UNIT[u.id] = u; });
+  var UNIT_SHORT = { nom: '$M', real: D.macro.base + ' $M', pc: '$/person', rpc: D.macro.base + ' $/person', gdp: '% of GDP' };
+  var N = D.n;
+
+  // Months that have a report, and the newest one (the default everywhere)
+  var REPORT_MONTHS = [];
+  for (var tt = 0; tt < N; tt++) if (Object.keys(D.lay).some(function (k) { return D.lay[k][tt] !== null; })) REPORT_MONTHS.push(tt);
+  var LAST = REPORT_MONTHS[REPORT_MONTHS.length - 1];
+
+  // What "Reset" restores. The newest month is always the default.
+  var DEFAULTS = { sel: [218, 376], tbl: 2, col: 'm', meas: 'r12', units: 'nom', from: 0, to: LAST, mon: LAST };
+
+  /* ======================================================================
+     State
+     ====================================================================== */
+  var S = clone(DEFAULTS), activeTab = 'time';
+  var slots = {};   // line id -> colour index (colour follows the line, not its position)
+
+  /* ======================================================================
+     Helpers
+     ====================================================================== */
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  function $(id) { return document.getElementById(id); }
+  function el(tag, attrs, html) { var e = document.createElement(tag); for (var k in attrs || {}) e.setAttribute(k, attrs[k]); if (html !== undefined) e.innerHTML = html; return e; }
+  function esc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+  // Months: t = 0 is the first month in the data
+  function ym(t) { var k = (D.y0 * 12 + D.mo0 - 1) + t; return { y: Math.floor(k / 12), m: k % 12 + 1 }; }
+  function tOf(y, m) { return y * 12 + m - 1 - (D.y0 * 12 + D.mo0 - 1); }
+  function monthName(t) { var d = ym(t); return MONTHS[d.m - 1] + ' ' + d.y; }
+  function monthShort(t) { var d = ym(t); return MON3[d.m - 1] + ' ' + d.y; }
+  function monthKey(t) { var d = ym(t); return d.y + '-' + (d.m < 10 ? '0' : '') + d.m; }
+  function parseKey(s) { var a = /^(\d{4})-(\d{2})$/.exec(s || ''); if (!a) return null; var t = tOf(+a[1], +a[2]); return t >= 0 && t < N ? t : null; }
+  function fyStart(t) { var d = ym(t); return d.m >= 4 ? d.y : d.y - 1; }
+  function fyLabel(t) { var y = fyStart(t); return y + '/' + String(y + 1).slice(2); }
+  // "April–July 2026", "April 2025–January 2026", or "April 2026"
+  function ytdLabel(t) {
+    var d = ym(t), y0 = fyStart(t);
+    if (d.m === 4) return 'April ' + d.y;
+    return y0 === d.y ? 'April–' + MONTHS[d.m - 1] + ' ' + d.y : 'April ' + y0 + '–' + MONTHS[d.m - 1] + ' ' + d.y;
+  }
+  // What the value and comparison columns mean for a line type and view
+  function periods(t, col, type) {
+    var d = ym(t);
+    if (type === 'position') return { cur: 'End of ' + monthName(t), prior: 'March 31, ' + fyStart(t), short: 'March 31' };
+    if (type === 'balance') return { cur: 'End of ' + monthName(t), prior: 'End of ' + monthName(t - 12), short: 'a year earlier' };
+    if (col === 'ytd') return { cur: ytdLabel(t), prior: ytdLabel(t - 12), short: 'a year earlier' };
+    return { cur: monthName(t), prior: monthName(t - 12), short: 'a year earlier' };
+  }
+
+  var nf = {};
+  function num(x, dp) { dp = dp || 0; nf[dp] = nf[dp] || new Intl.NumberFormat('en-CA', { minimumFractionDigits: dp, maximumFractionDigits: dp }); return nf[dp].format(x); }
+  function isNum(v) { return typeof v === 'number' && isFinite(v); }
+  // Decimals for a value in units u: $M whole; per person and % of GDP by size
+  function dpFor(v, u) {
+    var a = Math.abs(v);
+    if (u === 'nom' || u === 'real') return 0;
+    if (u === 'gdp') return a >= 10 ? 1 : a >= 0.1 ? 2 : 3;
+    return a >= 100 ? 0 : a >= 1 ? 1 : 2;
+  }
+  function rnd(v, dp) { var f = Math.pow(10, dp), r = Math.round(v * f) / f; return r === 0 ? 0 : r; }
+  // An amount in units u: $27,160M, −$1,200M, $8,833/person, 15.2%
+  function fmtV(v, u) {
+    if (!isNum(v)) return 'n/a';
+    u = u || S.units; var dp = dpFor(v, u), r = rnd(v, dp), sg = r < 0 ? '−' : '';
+    if (u === 'gdp') return sg + num(Math.abs(r), dp) + '%';
+    return sg + '$' + num(Math.abs(r), dp) + (u === 'nom' || u === 'real' ? 'M' : '/person');
+  }
+  // A signed change in units u: +$45M, −$12/person, +0.30 pts
+  function fmtD(v, u) {
+    if (!isNum(v)) return 'n/a';
+    u = u || S.units; var dp = dpFor(v, u), r = rnd(v, dp), sg = r > 0 ? '+' : r < 0 ? '−' : '';
+    if (u === 'gdp') return sg + num(Math.abs(r), dp) + ' pts';
+    return sg + '$' + num(Math.abs(r), dp) + (u === 'nom' || u === 'real' ? 'M' : '/person');
+  }
+  function signOf(v, u) { return isNum(v) ? Math.sign(rnd(v, dpFor(v, u || S.units))) : 0; }
+  // +4.2% / −4.2%
+  function fmtPctChg(p) { if (!isNum(p)) return 'n/a'; var r = rnd(p, 1); return r === 0 ? '0.0%' : (r > 0 ? '+' : '−') + num(Math.abs(r), 1) + '%'; }
+  function fmtBy(v, m) { var k = MEAS[m].kind; return k === 'pct' ? fmtPctChg(v) : k === 'change' ? fmtD(v) : fmtV(v); }
+  // Axis ticks: $ amounts without the unit suffix, or per cent
+  function fmtTick(v, kind, step) {
+    var dp = step < 1 ? (step < 0.1 ? (step < 0.01 ? 3 : 2) : 1) : 0, sgn = v < 0 ? '−' : '';
+    if (kind === 'pct') return sgn + num(Math.abs(v), dp) + '%';
+    if (S.units === 'gdp') return sgn + num(Math.abs(v), dp) + (kind === 'change' ? '' : '%');
+    return sgn + '$' + num(Math.abs(v), dp);
+  }
+  function axisTitle(kind) {
+    if (kind === 'pct') return 'Per cent';
+    if (kind === 'change' && S.units === 'gdp') return 'Percentage points of GDP';
+    return UNIT[S.units].axis;
+  }
+  function unitText(kind) { return kind === 'change' && S.units === 'gdp' ? 'percentage points of GDP' : UNIT[S.units].text; }
+  function unitShort(kind) { return kind === 'pct' ? '%' : kind === 'change' && S.units === 'gdp' ? 'pts of GDP' : UNIT_SHORT[S.units]; }
+  function itemLabel(id) { return ITEM[id] ? ITEM[id].label : 'Line ' + id; }
+  function tableOf(id) { return ITEM[id] ? ITEM[id].table : 0; }
+  function val(id, t, m) { return M.value(D, id, t, S.col, m || S.meas, S.units); }
+  // Months whose GDP, population and prices extend the last annual macro data
+  function macroNote(tLast) {
+    if (S.units === 'nom' || tLast < D.macro.extrap_from) return '';
+    return 'From ' + monthName(D.macro.extrap_from) + ' on, GDP, population and prices continue their ' + (D.macro.last_year - 1) + '–' + D.macro.last_year +
+      ' growth until annual data for ' + (D.macro.last_year + 1) + ' are available.';
+  }
+  function yearsOf(it) {
+    if (it.first === null) return '';
+    var a = ym(it.first).y, b = ym(it.last).y;
+    return a === b ? String(a) : a + '–' + b;
+  }
+
+  /* Lines on the time chart: [{key, id, name, short}]. Labels repeated across tables get the table number. */
+  function seriesList() {
+    var counts = {};
+    S.sel.forEach(function (id) { var l = itemLabel(id); counts[l] = (counts[l] || 0) + 1; });
+    return S.sel.map(function (id) {
+      var l = itemLabel(id), name = counts[l] > 1 ? l + ' (Table ' + tableOf(id) + ')' : l;
+      return { key: id, id: id, name: name, short: name };
+    });
+  }
+
+  function syncSlots() {
+    Object.keys(slots).forEach(function (k) { if (S.sel.indexOf(+k) < 0) delete slots[k]; });
+    S.sel.forEach(function (id) {
+      if (slots[id] !== undefined) return;
+      var used = Object.keys(slots).map(function (q) { return slots[q]; });
+      for (var i = 0; i < COLORS.length; i++) if (used.indexOf(i) < 0) { slots[id] = i; break; }
+    });
+  }
+  function colorOf(id) { return COLORS[slots[id] || 0]; }
+
+  /* ======================================================================
+     Build controls
+     ====================================================================== */
+  function buildControls() {
+    var mon = $('mon');
+    REPORT_MONTHS.slice().reverse().forEach(function (t) { mon.appendChild(el('option', { value: t }, monthName(t))); });
+    mon.addEventListener('change', function () { S.mon = +mon.value; update(); });
+
+    var tbl = $('tbl');
+    TABLES.forEach(function (tb) { tbl.appendChild(el('option', { value: tb.table }, 'Table ' + tb.table + ': ' + esc(tb.title))); });
+    tbl.addEventListener('change', function () { S.tbl = +tbl.value; buildItemList(); update(); });
+
+    var ms = $('meas');
+    M.MEASURES.forEach(function (m) { ms.appendChild(el('option', { value: m.id }, m.label)); });
+    ms.addEventListener('change', function () { S.meas = ms.value; update(); });
+
+    ['from', 'to'].forEach(function (id) {
+      var s = $(id);
+      for (var t = N - 1; t >= 0; t--) s.appendChild(el('option', { value: t }, monthShort(t)));
+    });
+    $('from').addEventListener('change', function () { S.from = +this.value; if (S.from > S.to) S.to = S.from; update(); });
+    $('to').addEventListener('change', function () { S.to = +this.value; if (S.to < S.from) S.from = S.to; update(); });
+    document.querySelectorAll('[data-span]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var span = +b.getAttribute('data-span');
+        S.to = LAST; S.from = span ? Math.max(0, LAST - span + 1) : 0; update();
+      });
+    });
+
+    document.querySelectorAll('[data-col]').forEach(function (b) {
+      b.addEventListener('click', function () { S.col = b.getAttribute('data-col'); update(); });
+    });
+    var us = $('units');
+    UNITS.forEach(function (u) { us.appendChild(el('option', { value: u.id }, u.label)); });
+    us.addEventListener('change', function () { S.units = us.value; update(); });
+    buildItemList();
+  }
+
+  // The checklist for the chosen table: current lines in published order, then discontinued lines
+  function buildItemList() {
+    var list = $('itemlist'); list.innerHTML = '';
+    var its = ITEMS.filter(function (it) { return it.table === S.tbl; });
+    ['current', 'discontinued'].forEach(function (status) {
+      var group = its.filter(function (it) { return it.status === status; });
+      if (!group.length) return;
+      if (status === 'discontinued') list.appendChild(el('div', { class: 'grp' }, 'Discontinued lines'));
+      group.forEach(function (it) {
+        if (it.kind === 'header') {
+          if (status === 'current') list.appendChild(el('div', { class: 'hdr lvl' + it.level }, esc(it.label)));
+          return;
+        }
+        var lab = el('label', { class: 'lvl' + it.level + (it.kind === 'total' ? ' tot' : '') },
+          '<input type="checkbox" value="' + it.id + '"><span>' + esc(it.label) + '</span><i class="sw" hidden></i>' +
+          (status === 'discontinued' ? '<span class="yrs">' + yearsOf(it) + '</span>' : ''));
+        lab.querySelector('input').addEventListener('change', function (e) { toggleItem(it.id, e.target); });
+        list.appendChild(lab);
+      });
+    });
+  }
+
+  function toggleItem(id, box) {
+    var i = S.sel.indexOf(id);
+    if (box.checked && i < 0) {
+      if (S.sel.length >= MAX_SERIES) { box.checked = false; toast('Up to ' + MAX_SERIES + ' lines at a time'); return; }
+      S.sel.push(id);
+    } else if (!box.checked && i >= 0) {
+      S.sel.splice(i, 1);
+    }
+    update();
+  }
+  function removeItem(id) {
+    S.sel.splice(S.sel.indexOf(id), 1); update();
+  }
+
+  function syncControls() {
+    $('mon').value = S.mon; $('tbl').value = S.tbl; $('meas').value = S.meas;
+    $('from').value = S.from; $('to').value = S.to; $('units').value = S.units;
+    $('units-hint').textContent = {
+      nom: 'As published.',
+      real: 'Deflated by the consumer price index (' + D.macro.base + ' = 100).',
+      pc: 'Divided by Canada\u2019s population.',
+      rpc: 'Deflated by the consumer price index and divided by population.',
+      gdp: 'Divided by GDP over the same months; balances by the past year\u2019s GDP.'
+    }[S.units];
+    document.querySelectorAll('[data-col]').forEach(function (b) { b.setAttribute('aria-checked', b.getAttribute('data-col') === S.col ? 'true' : 'false'); });
+    document.querySelectorAll('[data-span]').forEach(function (b) {
+      var span = +b.getAttribute('data-span'), on = S.to === LAST && S.from === (span ? Math.max(0, LAST - span + 1) : 0);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false'); b.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+    $('col-hint').textContent = S.col === 'm' ? 'Each month on its own.' : 'From April to the month shown, so it resets each April.';
+    $('meas-hint').textContent = S.meas === 'r12' ? 'Always adds up monthly values, so it ignores Monthly / Year to date.' :
+      S.meas === 'yoy' || S.meas === 'yoyp' ? 'Against the prior-year figure published in the same report.' :
+      S.meas === 'mom' || S.meas === 'momp' ? 'Needs both months’ reports.' : '';
+
+    document.querySelectorAll('#itemlist input').forEach(function (bx) {
+      var id = +bx.value, on = S.sel.indexOf(id) >= 0, sw = bx.parentNode.querySelector('.sw');
+      bx.checked = on; sw.hidden = !on; if (on) sw.style.background = colorOf(id);
+    });
+    var here = S.sel.filter(function (id) { return tableOf(id) === S.tbl; }).length;
+    $('picker-label').textContent = 'Choose lines from Table ' + S.tbl + (here ? ' (' + here + ' selected)' : '');
+    var ul = $('chosen'); ul.innerHTML = '';
+    seriesList().forEach(function (sr) {
+      var li = el('li', {}, '<i class="sw" style="background:' + colorOf(sr.id) + '"></i><span>' + esc(itemLabel(sr.id)) + ' <span class="t">T' + tableOf(sr.id) + '</span></span>');
+      var x = el('button', { class: 'x', type: 'button', 'aria-label': 'Remove ' + itemLabel(sr.id) }, '&times;');
+      x.addEventListener('click', function () { removeItem(sr.id); });
+      li.appendChild(x); ul.appendChild(li);
+    });
+  }
+
+  /* ======================================================================
+     Update cycle
+     ====================================================================== */
+  function update() {
+    layout();
+    syncSlots(); syncControls(); renderKPIs(); renderActive(); writeHash();
+    buildDock(); postHeight(); placeFloat();
+  }
+
+  // Headline cards: Table 1, fiscal year to date, for the report month
+  function renderKPIs() {
+    var t = S.mon, lbl = ytdLabel(t) + (S.units === 'real' || S.units === 'rpc' ? ', in ' + D.macro.base + ' dollars' : ''), lblp = ytdLabel(t - 12);
+    function pr(id) { return M.pair(D, id, t, 'ytd', S.units); }
+    var bal = pr(108), rev = pr(101), exp = pr(104);
+    $('kpi1-k').textContent = 'Budgetary balance, ' + lbl;
+    $('kpi1-v').textContent = isNum(bal.v) ? fmtV(bal.v) : 'n/a';
+    $('kpi1-d').textContent = !isNum(bal.v) ? 'Table 1 is not in the ' + monthName(t) + ' report' :
+      (bal.v < 0 ? 'Deficit' : 'Surplus') + '; ' + fmtV(bal.p) + ' in ' + lblp;
+    [['kpi2', 'Revenues', rev], ['kpi3', 'Program expenses', exp]].forEach(function (k) {
+      var c = k[2];
+      $(k[0] + '-k').textContent = k[1] + ', ' + lbl;
+      $(k[0] + '-v').textContent = isNum(c.v) ? fmtV(c.v) : 'n/a';
+      $(k[0] + '-d').textContent = !isNum(c.v) ? 'Table 1 is not in the ' + monthName(t) + ' report' :
+        fmtPctChg(M.pctChange(c.v, c.p)) + ' (' + fmtD(c.v - c.p) + ') from a year earlier';
+    });
+  }
+
+  function renderActive() {
+    if (activeTab === 'time') chartTime();
+    else if (activeTab === 'yoy') chartYoy();
+    else if (activeTab === 'ttime') tableTime();
+    else if (activeTab === 'stmt') tableStmt();
+  }
+
+  /* ======================================================================
+     Charts (hand-built SVG)
+     ====================================================================== */
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  var FONT = '-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif';
+  var measureCtx = document.createElement('canvas').getContext('2d');
+  function textWidth(t, size, weight) { measureCtx.font = (weight || 400) + ' ' + size + 'px ' + FONT; return measureCtx.measureText(t).width; }
+  function wrap(t, size, weight, maxW) {
+    var words = String(t).split(' '), lines = [], line = '';
+    words.forEach(function (w) { var test = line ? line + ' ' + w : w; if (textWidth(test, size, weight) > maxW && line) { lines.push(line); line = w; } else line = test; });
+    if (line) lines.push(line);
+    return lines;
+  }
+  function s(tag, attrs, parent, text) {
+    var e = document.createElementNS(SVGNS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (text !== undefined) e.textContent = text;
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function niceTicks(lo, hi, n) {
+    if (hi <= lo) hi = lo + 1;
+    var raw = (hi - lo) / n, mag = Math.pow(10, Math.floor(Math.log10(raw))), r = raw / mag;
+    var step = (r <= 1 ? 1 : r <= 2 ? 2 : r <= 2.5 ? 2.5 : r <= 5 ? 5 : 10) * mag;
+    var t = [], a = Math.floor(lo / step) * step, b = Math.ceil(hi / step) * step;
+    for (var v = a; v <= b + step / 2; v += step) t.push(Math.round(v / step) * step);
+    return { ticks: t, step: step };
+  }
+  // Horizontal bar from x0 (zero) to x1, rounded on the data end only
+  function barPath(x0, x1, y, h, r) {
+    var w = Math.abs(x1 - x0);
+    if (w < 0.5) return '';
+    r = Math.min(r, w, h / 2);
+    if (x1 >= x0) return 'M' + x0 + ',' + y + 'H' + (x1 - r) + 'Q' + x1 + ',' + y + ' ' + x1 + ',' + (y + r) + 'V' + (y + h - r) + 'Q' + x1 + ',' + (y + h) + ' ' + (x1 - r) + ',' + (y + h) + 'H' + x0 + 'Z';
+    return 'M' + x0 + ',' + y + 'H' + (x1 + r) + 'Q' + x1 + ',' + y + ' ' + x1 + ',' + (y + r) + 'V' + (y + h - r) + 'Q' + x1 + ',' + (y + h) + ' ' + (x1 + r) + ',' + (y + h) + 'H' + x0 + 'Z';
+  }
+
+  // Shared frame: background, wrapped title and subtitle, legend rows. Returns the y where the plot can start.
+  function frame(svg, W, narrow, pad, spec) {
+    var titleSize = narrow ? 15 : 17, subSize = narrow ? 12 : 13;
+    var titleLines = wrap(spec.title, titleSize, 700, W - 2 * pad), subLines = wrap(spec.subtitle, subSize, 400, W - 2 * pad);
+    var y = pad + titleSize;
+    titleLines.forEach(function (l, k) { s('text', { x: pad, y: y + k * titleSize * 1.25, 'font-size': titleSize, 'font-weight': 700, fill: '#1f2328' }, svg, l); });
+    y += (titleLines.length - 1) * titleSize * 1.25 + subSize * 1.5;
+    subLines.forEach(function (l, k) { s('text', { x: pad, y: y + k * subSize * 1.35, 'font-size': subSize, fill: '#5b616b' }, svg, l); });
+    y += (subLines.length - 1) * subSize * 1.35 + 10;
+    var items = spec.legend || [];
+    if (items.length) {
+      var lx = pad; y += 12;
+      items.forEach(function (it) {
+        var w = 18 + textWidth(it.name, 12.5) + 20;
+        if (lx > pad && lx + w - 20 > W - pad) { lx = pad; y += 20; }
+        if (it.kind === 'tick') s('rect', { x: lx - 1, y: y - 4, width: 14, height: 2.5, fill: '#1f2328' }, svg);
+        else s('rect', { x: lx, y: y - 9, width: 12, height: 12, rx: 2, fill: it.color }, svg);
+        s('text', { x: lx + 18, y: y + 1, 'font-size': 12.5, fill: '#1f2328' }, svg, it.name);
+        lx += w;
+      });
+    }
+    return y + 6;
+  }
+  function sourceCap() {
+    return 'Source: Finance Canada, The Fiscal Monitor' + (S.units === 'nom' ? '' : '; FON macro data') + '. See ' + D.settings.tool_url + ' for details. CC BY 4.0';
+  }
+  function footer(svg, W, narrow, pad, fy0) {
+    var logo = $('fon-logo'), lh = narrow ? 18 : 22, lw = lh * 1109 / 140;
+    if (logo && logo.src) s('image', { href: logo.src, x: pad, y: fy0, width: lw, height: lh }, svg);
+    var cap = sourceCap();
+    if (narrow) wrap(cap, 10.5, 400, W - 2 * pad).forEach(function (l, k) { s('text', { x: pad, y: fy0 + lh + 16 + k * 14, 'font-size': 10.5, fill: '#6b717b' }, svg, l); });
+    else s('text', { x: W - pad, y: fy0 + lh - 5, 'text-anchor': 'end', 'font-size': 11, fill: '#6b717b' }, svg, cap);
+  }
+  function footerH(W, narrow, pad) {
+    if (!narrow) return 44;
+    var cap = sourceCap();
+    return 18 + 16 + wrap(cap, 10.5, 400, W - 2 * pad).length * 14 + 6;
+  }
+  function emptyNote(svg, x, y, msg) { s('text', { x: x, y: y, 'text-anchor': 'middle', 'font-size': 14, fill: '#6b717b' }, svg, msg); }
+
+  // Plain-sentence description of the current measure, for subtitles and table notes
+  function measureSentence() {
+    var colTxt = S.col === 'm' ? 'monthly' : 'fiscal-year-to-date', ut = unitText('level'), uc = unitText('change');
+    var inU = S.units === 'nom' ? '' : ' (in ' + ut + ')';
+    switch (S.meas) {
+      case 'level': return (S.col === 'm' ? 'Monthly amounts' : 'Fiscal-year-to-date amounts') + ', in ' + ut;
+      case 'yoy':   return 'Change in ' + colTxt + ' amounts from a year earlier, in ' + uc;
+      case 'yoyp':  return 'Per cent change in ' + colTxt + ' amounts' + inU + ' from a year earlier';
+      case 'mom':   return 'Change in ' + colTxt + ' amounts from the previous month, in ' + uc;
+      case 'momp':  return 'Per cent change in ' + colTxt + ' amounts' + inU + ' from the previous month';
+      case 'r12':   return 'Total of the last 12 months, in ' + ut;
+    }
+    return '';
+  }
+
+  /* ---------------------------- Line chart: over time ---------------------------- */
+  function chartTime() {
+    var host = $('chart-time'), m = S.meas, ser = seriesList();
+    var months = []; for (var t = S.from; t <= S.to; t++) months.push(t);
+    ser.forEach(function (sr) { sr.color = colorOf(sr.id); sr.values = months.map(function (t) { return val(sr.id, t); }); });
+
+    // "Total revenues and total expenses"; names with capitals inside (Canada Health Transfer) keep them
+    var second = ser.length === 2 ? (/[A-Z]/.test(ser[1].name.slice(1)) ? ser[1].name : ser[1].name.charAt(0).toLowerCase() + ser[1].name.slice(1)) : '';
+    var title = !ser.length ? 'No lines selected' : ser.length === 1 ? ser[0].name : ser.length === 2 ? ser[0].name + ' and ' + second : 'Selected Fiscal Monitor lines';
+    var subtitle = measureSentence() + ', ' + monthName(months[0]) + ' to ' + monthName(months[months.length - 1]) + '.';
+
+    var W = Math.max(300, Math.round(host.clientWidth || 800)), narrow = W < 560, pad = narrow ? 10 : 16;
+    var svg = s('svg', { 'font-family': FONT, role: 'img', 'aria-label': title + '. ' + subtitle });
+    s('rect', { x: 0, y: 0, width: W, height: 10, fill: '#ffffff', 'data-bg': 1 }, svg);
+    var header = frame(svg, W, narrow, pad, { title: title, subtitle: subtitle, legend: ser.length > 1 ? ser.map(function (x) { return { name: x.name, color: x.color }; }) : [] });
+
+    var all = []; ser.forEach(function (sr) { sr.values.forEach(function (v) { if (v !== null) all.push(v); }); });
+    var top = header + 12, H0 = plotH(370), xAxisH = 30;
+    var nt = niceTicks(Math.min(0, Math.min.apply(null, all.length ? all : [0])), Math.max(0, Math.max.apply(null, all.length ? all : [1])), 5);
+    var ticks = nt.ticks, d0 = ticks[0], d1 = ticks[ticks.length - 1];
+    var tickW = Math.max.apply(null, ticks.map(function (q) { return textWidth(fmtTick(q, MEAS[m].kind, nt.step), narrow ? 10.5 : 12); }));
+    var left = pad + 18 + tickW + 10;
+    var endLabels = !narrow && ser.length > 0;
+    var right = endLabels ? Math.min(180, Math.max.apply(null, ser.map(function (x) { return textWidth(x.short, 12); })) + 22) : pad + 6;
+    var plotW = W - left - right, bottom = top + H0;
+    function X(t) { return months.length === 1 ? left + plotW / 2 : left + (t - months[0]) / (months[months.length - 1] - months[0]) * plotW; }
+    function Y(v) { return bottom - (v - d0) / (d1 - d0) * H0; }
+
+    ticks.forEach(function (q) {
+      if (!all.length && q !== 0) return;   // empty chart: just the baseline
+      s('line', { x1: left, x2: left + plotW, y1: Y(q), y2: Y(q), stroke: q === 0 ? '#1f2328' : '#e6e8eb', 'stroke-width': q === 0 ? 1.5 : 1 }, svg);
+      if (all.length) s('text', { x: left - 8, y: Y(q) + 4, 'text-anchor': 'end', 'font-size': narrow ? 10.5 : 12, fill: '#5b616b' }, svg, fmtTick(q, MEAS[m].kind, nt.step));
+    });
+    s('text', { transform: 'translate(' + (pad + 4) + ',' + (top + H0 / 2) + ') rotate(-90)', 'text-anchor': 'middle', 'font-size': 12, fill: '#5b616b', 'dominant-baseline': 'hanging' }, svg, axisTitle(MEAS[m].kind));
+
+    // x ticks: every 1, 2, 3 or 6 months, or January of every 1, 2, 5 or 10 years
+    var span = months[months.length - 1] - months[0], maxT = Math.max(2, Math.floor(plotW / (narrow ? 64 : 78)));
+    var step = [1, 2, 3, 6, 12, 24, 60, 120].filter(function (k) { return span / k <= maxT; })[0] || 120;
+    months.forEach(function (t) {
+      var d = ym(t);
+      if (months.length > 1) {
+        if (step >= 12 && (d.m !== 1 || (d.y % (step / 12)) !== 0)) return;
+        if (step < 12 && ((d.m - 1) % step) !== 0) return;
+      }
+      s('line', { x1: X(t), x2: X(t), y1: bottom, y2: bottom + 5, stroke: '#c9ccd2' }, svg);
+      s('text', { x: X(t), y: bottom + 19, 'text-anchor': 'middle', 'font-size': narrow ? 11 : 12.5, 'font-weight': 700, fill: '#1f2328' }, svg, step >= 12 ? String(d.y) : monthShort(t));
+    });
+
+    // Lines (2px, broken where a month is missing)
+    var g = s('g', {}, svg);
+    ser.forEach(function (sr) {
+      var d = '', run = 0;
+      function dot(i) { s('circle', { cx: X(months[i]), cy: Y(sr.values[i]), r: 2.5, fill: sr.color }, g); }
+      sr.values.forEach(function (v, i) {
+        if (v === null) { if (run === 1) dot(i - 1); run = 0; return; }
+        d += (run ? 'L' : 'M') + X(months[i]).toFixed(1) + ',' + Y(v).toFixed(1);
+        run++;
+      });
+      if (run === 1) dot(sr.values.length - 1);
+      if (d) s('path', { d: d, fill: 'none', stroke: sr.color, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, g);
+    });
+    if (!all.length) emptyNote(svg, left + plotW / 2, top + H0 / 2, ser.length ? 'No data for this selection' : 'Choose lines from the menu to show them here');
+
+    // Direct labels at the end of each line, nudged apart so they don't collide
+    if (endLabels) {
+      var labs = [];
+      ser.forEach(function (sr) {
+        for (var i = sr.values.length - 1; i >= 0; i--) if (sr.values[i] !== null) { labs.push({ sr: sr, y: Y(sr.values[i]) }); break; }
+      });
+      labs.sort(function (a, b) { return a.y - b.y; });
+      for (var k = 1; k < labs.length; k++) if (labs[k].y - labs[k - 1].y < 14) labs[k].y = labs[k - 1].y + 14;
+      for (k = labs.length - 1; k >= 0; k--) {
+        if (labs[k].y > bottom + 4) labs[k].y = bottom + 4;
+        if (k < labs.length - 1 && labs[k + 1].y - labs[k].y < 14) labs[k].y = labs[k + 1].y - 14;
+      }
+      labs.forEach(function (L) {
+        var lx = left + plotW + 8, txt = L.sr.short;
+        while (textWidth(txt, 12) > right - 22 && txt.length > 4) txt = txt.slice(0, -2);
+        if (txt !== L.sr.short) txt = txt.replace(/[\s,]*\S?$/, '') + '…';
+        s('circle', { cx: lx + 3, cy: L.y, r: 3.5, fill: L.sr.color }, svg);
+        s('text', { x: lx + 11, y: L.y + 4, 'font-size': 12, fill: '#1f2328' }, svg, txt);
+      });
+    }
+
+    var H = Math.round(bottom + xAxisH + 12 + footerH(W, narrow, pad));
+    footer(svg, W, narrow, pad, bottom + xAxisH + 12);
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('width', W); svg.setAttribute('height', H);
+    svg.querySelector('[data-bg]').setAttribute('height', H);
+
+    // Hover: crosshair + tooltip for the nearest month
+    var guide = s('g', { 'pointer-events': 'none', visibility: 'hidden', 'data-hover': 1 }, svg);
+    var gl = s('line', { y1: top, y2: bottom, stroke: '#1f2328', 'stroke-opacity': 0.35, 'stroke-width': 1 }, guide);
+    var dots = ser.map(function (sr) { return s('circle', { r: 4.5, fill: sr.color, stroke: '#fff', 'stroke-width': 2 }, guide); });
+    var hit = s('rect', { x: left, y: top, width: plotW, height: H0 + xAxisH, fill: 'transparent', 'data-hit': 1 }, svg);
+    function move(ev) {
+      var r = svg.getBoundingClientRect(), sx = (ev.clientX - r.left) * W / r.width;
+      var i = months.length === 1 ? 0 : Math.round((sx - left) / plotW * (months.length - 1));
+      i = Math.max(0, Math.min(months.length - 1, i));
+      var t = months[i];
+      guide.setAttribute('visibility', 'visible');
+      gl.setAttribute('x1', X(t)); gl.setAttribute('x2', X(t));
+      ser.forEach(function (sr, k) {
+        var v = sr.values[i];
+        dots[k].setAttribute('visibility', v === null ? 'hidden' : 'visible');
+        if (v !== null) { dots[k].setAttribute('cx', X(t)); dots[k].setAttribute('cy', Y(v)); }
+      });
+      var rows = ser.map(function (sr) { return { sr: sr, v: sr.values[i] }; }).sort(function (a, b) { return (b.v === null ? -Infinity : b.v) - (a.v === null ? -Infinity : a.v); });
+      var sub = S.meas === 'r12' ? '12 months to ' : S.col === 'ytd' && S.meas === 'level' ? ytdLabel(t) + ' · ' : '';
+      showTip(ev, '<div class="t">' + (S.meas === 'r12' ? sub + monthName(t) : S.col === 'ytd' && S.meas === 'level' ? esc(ytdLabel(t)) : monthName(t)) +
+        ' <span style="font-weight:400;color:#6b717b">&middot; ' + fyLabel(t) + '</span></div>' +
+        rows.map(function (o) { return '<div class="r"><span><i class="sw" style="background:' + o.sr.color + '"></i>' + esc(o.sr.name) + '</span><span>' + fmtBy(o.v, m) + '</span></div>'; }).join(''));
+    }
+    hit.addEventListener('mousemove', move);
+    hit.addEventListener('mouseleave', function () { guide.setAttribute('visibility', 'hidden'); hideTip(); });
+    hit.addEventListener('touchstart', function (e) { move(e.touches[0]); }, { passive: true });
+    hit.addEventListener('touchmove', function (e) { move(e.touches[0]); }, { passive: true });
+
+    host.innerHTML = ''; host.appendChild(svg);
+
+    // Cautions that apply to the current selection
+    var msg = [];
+    var types = S.sel.map(function (id) { return M.typeOf(D, id); });
+    if (types.indexOf('position') >= 0 && (S.meas === 'yoy' || S.meas === 'yoyp'))
+      msg.push('For Table 7 lines, the comparison is with March 31 of the previous fiscal year.');
+    if (S.meas === 'r12' && types.some(function (k) { return k !== 'flow'; }))
+      msg.push('12-month totals are blank for balances (cash and Table 7 lines).');
+    if (types.some(function (k) { return k !== 'flow'; }) && S.meas !== 'r12')
+      msg.push('Balances are the same in Monthly and Year to date.');
+    if (macroNote(S.to)) msg.push(macroNote(S.to));
+    var co = $('time-callout');
+    co.hidden = !msg.length;
+    if (msg.length) co.innerHTML = '<b>Note.</b> ' + esc(msg.join(' ')) + ' <a href="#notes" data-goto="notes" data-section="n-measures">More in the notes</a>.';
+  }
+
+  /* ---------------------------- Bar chart: versus last year ---------------------------- */
+  // Lines of the chosen table in the report month, as published (headers dropped)
+  function stmtRows(tbl, t) {
+    var li = D.lay[tbl][t];
+    if (li === null || li === undefined) return null;
+    return D.layouts[tbl][li].filter(function (id) { return ITEM[id]; });
+  }
+
+  function chartYoy() {
+    var host = $('chart-yoy'), t = S.mon, tbl = S.tbl, tb = TABLE[tbl];
+    var ids = stmtRows(tbl, t);
+    var W = Math.max(300, Math.round(host.clientWidth || 800)), narrow = W < 560, pad = narrow ? 10 : 16;
+    var svg = s('svg', { 'font-family': FONT, role: 'img' });
+    s('rect', { x: 0, y: 0, width: W, height: 10, fill: '#ffffff', 'data-bg': 1 }, svg);
+
+    var type = tbl === 7 ? 'position' : 'flow', per = periods(t, S.col, type);
+    var rows = (ids || []).filter(function (id) { return ITEM[id].kind !== 'header'; }).map(function (id) {
+      var p = M.pair(D, id, t, S.col, S.units), pp = periods(t, S.col, M.typeOf(D, id));
+      return { id: id, it: ITEM[id], v: p.v, p: p.p, per: pp };
+    }).filter(function (r) { return r.v !== null || r.p !== null; });
+
+    var title = tb.title + ': ' + per.cur + (type === 'position' ? ' and March 31, ' + fyStart(t) : ', compared with a year earlier');
+    var ut = unitText('level'), subtitle = ut.charAt(0).toUpperCase() + ut.slice(1) + '. Bars show ' + per.cur + '; black markers show ' + per.prior + ', as published in the ' + monthName(t) + ' report.';
+    if (tbl !== 7 && rows.some(function (r) { return r.it.type === 'balance'; })) subtitle += ' Cash balances are at the end of the month.';
+    svg.setAttribute('aria-label', title + '. ' + subtitle);
+    var header = frame(svg, W, narrow, pad, { title: title, subtitle: subtitle, legend: [{ name: per.cur, color: '#396ab1' }, { name: per.prior, kind: 'tick' }] });
+
+    if (!rows.length) {
+      var Hn = header + 140 + footerH(W, narrow, pad);
+      emptyNote(svg, W / 2, header + 70, 'Table ' + tbl + ' is not in the ' + monthName(t) + ' report');
+      footer(svg, W, narrow, pad, header + 120);
+      svg.setAttribute('viewBox', '0 0 ' + W + ' ' + Hn); svg.setAttribute('width', W); svg.setAttribute('height', Hn);
+      svg.querySelector('[data-bg]').setAttribute('height', Hn);
+      host.innerHTML = ''; host.appendChild(svg);
+      $('yoy-callout').hidden = true;
+      return;
+    }
+
+    // Wide: labels | bars | change, one row per line. Narrow: each label sits above its bar.
+    var stacked = narrow, labFs = narrow ? 11.5 : 12.5, chgW = narrow ? 52 : 70;
+    var labW = stacked ? W - 2 * pad - chgW - 8 : Math.min(270, Math.round(W * 0.36));
+    rows.forEach(function (r) {
+      var ind = Math.min(r.it.level, 2) * 8;
+      r.lines = wrap(r.it.label, labFs, r.it.kind === 'total' ? 650 : 400, labW - ind);
+      if (r.lines.length > 2) { r.lines = r.lines.slice(0, 2); r.lines[1] = r.lines[1].replace(/[\s,]*\S*$/, '') + '…'; }
+    });
+    var left = stacked ? pad : pad + labW + 10, right = pad + chgW + 8, plotW = W - left - right;
+    var top = header + 30, gap = narrow ? 6 : 8, rowY = [], y = top, lineH = labFs + 3, barH = stacked ? 14 : 18;
+    rows.forEach(function (r) {
+      var h = stacked ? r.lines.length * lineH + barH + 2 * gap + 4 : Math.max(28, r.lines.length * lineH + gap);
+      rowY.push({ y: y, h: h }); y += h;
+    });
+    var bottom = y;
+
+    var all = []; rows.forEach(function (r) { if (r.v !== null) all.push(r.v); if (r.p !== null) all.push(r.p); });
+    var nt = niceTicks(Math.min(0, Math.min.apply(null, all)), Math.max(0, Math.max.apply(null, all)) * 1.04, narrow ? 3 : 5);
+    var ticks = nt.ticks, d0 = ticks[0], d1 = ticks[ticks.length - 1];
+    // leave room for the value labels outside the bars, on each side that has them
+    var negW = 0, posW = 0;
+    rows.forEach(function (r) { if (r.v === null) return; var w = textWidth(fmtV(r.v), 11.5) + 8; if (r.v < 0) negW = Math.max(negW, w); else posW = Math.max(posW, w); });
+    var innerL = left + negW, innerR = left + plotW - posW;
+    function Xp(v) { return innerL + (v - d0) / (d1 - d0) * (innerR - innerL); }
+
+    var lastR = -Infinity, tfs = narrow ? 10.5 : 12;
+    ticks.forEach(function (q) {
+      s('line', { x1: Xp(q), x2: Xp(q), y1: top - 6, y2: bottom, stroke: q === 0 ? '#1f2328' : '#e6e8eb', 'stroke-width': q === 0 ? 1.5 : 1 }, svg);
+      var lab = fmtTick(q, 'level', nt.step), w = textWidth(lab, tfs);
+      if (Xp(q) - w / 2 < lastR + 6 || Xp(q) + w / 2 > W - right + 4) return;   // skip labels that would collide
+      s('text', { x: Xp(q), y: top - 12, 'text-anchor': 'middle', 'font-size': tfs, fill: '#5b616b' }, svg, lab);
+      lastR = Xp(q) + w / 2;
+    });
+    s('text', { x: W - pad, y: top - 12, 'text-anchor': 'end', 'font-size': tfs, 'font-weight': 700, fill: '#1f2328' }, svg, 'Change');
+
+    var g = s('g', {}, svg), gLab = s('g', {});   // labels go on top of the zero line
+    rows.forEach(function (r, i) {
+      var ry = rowY[i].y, rh = rowY[i].h, bh, by, ly, ind = Math.min(r.it.level, 2) * 8;
+      if (stacked) { ly = ry + gap + labFs; bh = barH; by = ry + gap + r.lines.length * lineH + 4; }
+      else { bh = Math.min(rh * 0.62, 22); by = ry + (rh - bh) / 2; ly = ry + rh / 2 - (r.lines.length - 1) * lineH / 2 + labFs * 0.35; }
+      if (i > 0) s('line', { x1: pad, x2: W - pad, y1: ry, y2: ry, stroke: '#eef0f2' }, g);
+      r.lines.forEach(function (l, k) {
+        var a = { x: pad + ind, y: ly + k * lineH, 'font-size': labFs, 'font-weight': r.it.kind === 'total' ? 700 : 400, fill: '#1f2328' };
+        if (stacked) { a.stroke = '#ffffff'; a['stroke-width'] = 3; a['paint-order'] = 'stroke'; a['stroke-linejoin'] = 'round'; }
+        s('text', a, gLab, l);
+      });
+      // bar, marker, value
+      if (r.v !== null) { var d = barPath(Xp(0), Xp(r.v), by, bh, 4); if (d) s('path', { d: d, fill: '#396ab1' }, g); }
+      if (r.p !== null) s('rect', { x: Xp(r.p) - 1.25, y: by - 4, width: 2.5, height: bh + 8, fill: '#1f2328' }, g);
+      if (r.v !== null) {
+        var end = Math.max(Xp(r.v), Xp(0), r.p !== null ? Xp(r.p) + 2 : -Infinity), endL = Math.min(Xp(r.v), Xp(0), r.p !== null ? Xp(r.p) - 2 : Infinity);
+        if (r.v >= 0) s('text', { x: end + 5, y: by + bh / 2 + 4, 'font-size': 11.5, fill: '#1f2328', 'font-variant-numeric': 'tabular-nums' }, g, fmtV(r.v));
+        else s('text', { x: endL - 5, y: by + bh / 2 + 4, 'text-anchor': 'end', 'font-size': 11.5, fill: '#1f2328', 'font-variant-numeric': 'tabular-nums' }, g, fmtV(r.v));
+      }
+      // change column
+      var pc = M.pctChange(r.v, r.p);
+      s('text', { x: W - pad, y: (stacked ? by + bh / 2 : ry + rh / 2) + 4, 'text-anchor': 'end', 'font-size': narrow ? 11 : 12, 'font-weight': r.it.kind === 'total' ? 700 : 400,
+        fill: !isNum(pc) || Math.round(pc * 10) === 0 ? '#6b717b' : pc > 0 ? '#1f5a2d' : '#9b2226', 'font-variant-numeric': 'tabular-nums' }, g, fmtPctChg(pc));
+    });
+    s('line', { x1: Xp(0), x2: Xp(0), y1: top - 6, y2: bottom, stroke: '#1f2328', 'stroke-width': 1.5 }, svg);
+    svg.appendChild(gLab);
+
+    var H = Math.round(bottom + 14 + footerH(W, narrow, pad));
+    footer(svg, W, narrow, pad, bottom + 14);
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('width', W); svg.setAttribute('height', H);
+    svg.querySelector('[data-bg]').setAttribute('height', H);
+
+    rows.forEach(function (r, i) {
+      var hit = s('rect', { x: 0, y: rowY[i].y, width: W, height: rowY[i].h, fill: 'transparent', 'data-hit': 1 }, svg);
+      var html = function () {
+        var out = [['<i class="sw" style="background:#396ab1"></i>' + esc(r.per.cur), fmtV(r.v)], ['<i class="sw" style="background:#1f2328;height:3px"></i>' + esc(r.per.prior), fmtV(r.p)]];
+        if (r.v !== null && r.p !== null) out.push(['Change', fmtD(r.v - r.p)], ['Change (%)', fmtPctChg(M.pctChange(r.v, r.p))]);
+        return '<div class="t">' + esc(r.it.label) + '</div>' + out.map(function (o) { return '<div class="r"><span>' + o[0] + '</span><span>' + o[1] + '</span></div>'; }).join('');
+      };
+      hit.addEventListener('mousemove', function (e) { showTip(e, html()); });
+      hit.addEventListener('mouseleave', hideTip);
+      hit.addEventListener('touchstart', function (e) { showTip(e.touches[0], html()); }, { passive: true });
+    });
+
+    host.innerHTML = ''; host.appendChild(svg);
+    var co = $('yoy-callout'), note = [tb.note, macroNote(t)].filter(Boolean).join(' ');
+    co.hidden = !note;
+    if (note) co.innerHTML = '<b>Table ' + tbl + '.</b> ' + esc(note);
+  }
+
+  /* ======================================================================
+     Tables
+     ====================================================================== */
+  function timeTableData() {
+    var ser = seriesList(), unit = unitShort(MEAS[S.meas].kind), rows = [];
+    for (var t = S.to; t >= S.from; t--) rows.push([monthName(t)].concat(ser.map(function (x) { return val(x.id, t); })));
+    return { head: ['Month'].concat(ser.map(function (x) { return x.name + ' (' + unit + ')'; })), kinds: [null].concat(ser.map(function () { return MEAS[S.meas].kind; })),
+      rows: rows, levels: [], classes: [], note: measureSentence() + '.' + (macroNote(S.to) ? ' ' + macroNote(S.to) : '') + ' n/a: not available.' };
+  }
+  function stmtTableData() {
+    var t = S.mon, tbl = S.tbl, ids = stmtRows(tbl, t) || [], type = tbl === 7 ? 'position' : 'flow';
+    var pm = periods(t, 'm', type), py = periods(t, 'ytd', type), head, kinds, rows = [], levels = [], classes = [];
+    var uL = unitShort('level'), uC = unitShort('change');
+    if (type === 'position') {
+      head = ['Line', pm.prior + ' (' + uL + ')', pm.cur + ' (' + uL + ')', 'Change (' + uC + ')', 'Change (%)'];
+      kinds = [null, 'level', 'level', 'change', 'pct'];
+    } else {
+      head = ['Line', pm.prior + ' (' + uL + ')', pm.cur + ' (' + uL + ')', 'Change (' + uC + ')', 'Change (%)', py.prior + ' (' + uL + ')', py.cur + ' (' + uL + ')', 'Change (' + uC + ')', 'Change (%)'];
+      kinds = [null, 'level', 'level', 'change', 'pct', 'level', 'level', 'change', 'pct'];
+    }
+    ids.forEach(function (id) {
+      var it = ITEM[id], r = [it.label];
+      if (it.kind === 'header') { r = r.concat(new Array(kinds.length - 1).fill('')); }
+      else {
+        var a = M.pair(D, id, t, 'm', S.units), b = M.pair(D, id, t, 'ytd', S.units);
+        if (it.type === 'balance') a = { v: null, p: null };   // published in the year-to-date columns only
+        r.push(a.p, a.v, isNum(a.v) && isNum(a.p) ? a.v - a.p : null, M.pctChange(a.v, a.p));
+        if (type !== 'position') r.push(b.p, b.v, isNum(b.v) && isNum(b.p) ? b.v - b.p : null, M.pctChange(b.v, b.p));
+      }
+      rows.push(r); levels.push(it.level); classes.push(it.kind === 'header' ? 'grp' : it.kind === 'total' ? 'total' : '');
+    });
+    var note = (TABLE[tbl].note ? TABLE[tbl].note + ' ' : '') + 'Table ' + tbl + ' of the ' + monthName(t) + ' Fiscal Monitor, in ' + unitText('level') + '. ' + (macroNote(t) ? macroNote(t) + ' ' : '') + 'n/a: not reported.';
+    if (!ids.length) note = 'Table ' + tbl + ' is not in the ' + monthName(t) + ' report.';
+    return { head: head, kinds: kinds, rows: rows, levels: levels, classes: classes, note: note, title: 'Table ' + tbl + ': ' + TABLE[tbl].title + ', ' + monthName(t) };
+  }
+  function cell(v, kind) {
+    if (v === '') return '<td></td>';
+    if (!isNum(v)) return '<td class="na">n/a</td>';
+    if (kind === 'change') { var sc = signOf(v); return '<td class="' + (sc > 0 ? 'pos' : sc < 0 ? 'neg' : '') + '">' + fmtD(v) + '</td>'; }
+    if (kind === 'pct') { var sp = Math.sign(rnd(v, 1)); return '<td class="' + (sp > 0 ? 'pos' : sp < 0 ? 'neg' : '') + '">' + fmtPctChg(v) + '</td>'; }
+    return '<td>' + fmtV(v) + '</td>';
+  }
+  function renderTable(tbl, d) {
+    var h = '<thead><tr>' + d.head.map(function (x) { return '<th scope="col">' + esc(x) + '</th>'; }).join('') + '</tr></thead><tbody>';
+    d.rows.forEach(function (row, ri) {
+      var cls = d.classes[ri] || '', lv = d.levels[ri] || 0;
+      if (cls === 'grp') { h += '<tr class="grp"><td class="l' + Math.min(lv, 3) + '" colspan="' + d.head.length + '">' + esc(row[0]) + '</td></tr>'; return; }
+      h += '<tr' + (cls ? ' class="' + cls + '"' : '') + '>' + row.map(function (v, k) {
+        return k === 0 ? '<td class="l' + Math.min(lv, 3) + '">' + esc(v) + '</td>' : cell(v, d.kinds[k]);
+      }).join('') + '</tr>';
+    });
+    tbl.innerHTML = h + '</tbody>';
+  }
+  function tableTime() { var d = timeTableData(); renderTable($('table-time'), d); $('ttime-note').textContent = S.sel.length ? d.note : 'No lines selected. Choose lines from the menu to list them here.'; }
+  function tableStmt() { var d = stmtTableData(); renderTable($('table-stmt'), d); $('stmt-note').textContent = d.note; }
+
+  /* ======================================================================
+     Tooltip, toast, downloads
+     ====================================================================== */
+  // charts are about 18% shorter on tablet widths so the chart and its settings fit together; full height on phones
+  function plotH(h) { return ROOT.classList.contains('narrow') && !ROOT.classList.contains('phone') ? Math.round(h * 0.82) : h; }
+  var tip = $('tip');
+  function showTip(e, html) {
+    tip.innerHTML = html; tip.classList.add('on');
+    var w = tip.offsetWidth, h = tip.offsetHeight, x = e.clientX + 14, y = e.clientY + 14;
+    if (x + w > window.innerWidth - 8) x = e.clientX - w - 14;
+    if (y + h > visBottom() - 8) y = e.clientY - h - 14;
+    tip.style.left = Math.max(8, x) + 'px'; tip.style.top = Math.max(visTop() + 8, y) + 'px';
+  }
+  function hideTip() { tip.classList.remove('on'); }
+  var toastTimer;
+  function toast(msg) {
+    var t = $('toast'); t.textContent = msg; t.classList.add('on');
+    // embedded: the iframe is as tall as the tool, so place the message near the bottom of the visible part of the page
+    if (VIEW) { t.style.position = 'absolute'; t.style.bottom = 'auto'; t.style.top = Math.max(0, VIEW.top + VIEW.height - 64) + 'px'; } clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.remove('on'); }, 2200); }
+
+  function fileStem(view) { return 'fiscal-monitor-' + monthKey(view === 'time' || view === 'ttime' ? S.to : S.mon) + '-' + view; }
+  function saveBlob(blob, name) {
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  }
+  function downloadPNG(hostId) {
+    var svg = $(hostId).querySelector('svg'); if (!svg) return;
+    var clone = svg.cloneNode(true);
+    clone.setAttribute('xmlns', SVGNS);
+    clone.querySelectorAll('[data-hit],[data-hover]').forEach(function (n) { n.remove(); });
+    var w = +svg.getAttribute('width'), h = +svg.getAttribute('height'), scale = 2;
+    var img = new Image();
+    img.onload = function () {
+      var c = document.createElement('canvas'); c.width = w * scale; c.height = h * scale;
+      var ctx = c.getContext('2d'); ctx.scale(scale, scale); ctx.drawImage(img, 0, 0, w, h);
+      try { c.toBlob(function (b) { saveBlob(b, fileStem(hostId === 'chart-time' ? 'time' : 'versus-last-year') + '.png'); }); }
+      catch (err) { toast('PNG export is unavailable in this preview. It works in the built file.'); }
+    };
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(clone));
+  }
+  function csvQ(v) { v = String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
+  function csvFooter(ncol) {
+    var pad = function (t) { return [csvQ(t)].concat(new Array(Math.max(0, ncol - 1)).fill('')).join(','); };
+    return ['', pad('Source: Department of Finance Canada, The Fiscal Monitor, compiled by Finances of the Nation.' +
+        (S.units === 'nom' ? '' : ' GDP, population and consumer prices: Finances of the Nation macro database, from Statistics Canada, interpolated to months.')),
+      pad(citation()), pad('Licence: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Source data remain under the Open Government Licence - Canada' + (S.units === 'nom' ? '' : ' and the Statistics Canada Open Licence') + '.')];
+  }
+  function downloadCSV(kind) {
+    var d = kind === 'time' ? timeTableData() : stmtTableData();
+    var lines = [d.head.map(csvQ).join(',')];
+    d.rows.forEach(function (r) { lines.push(r.map(function (v, k) { return k === 0 ? csvQ(v) : (!isNum(v) ? '' : (d.kinds[k] === 'pct' ? (+v).toFixed(2) : String(Math.round(v * 10000) / 10000))); }).join(',')); });
+    saveBlob(new Blob([lines.concat(csvFooter(d.head.length)).join('\n')], { type: 'text/csv' }), fileStem(kind === 'time' ? 'ttime' : 'table' + S.tbl) + '.csv');
+  }
+  function downloadAll() {
+    var head = ['month', 'fiscal_year', 'table', 'id', 'line', 'status', 'prior_year', 'this_year', 'prior_fy_to_date', 'current_fy_to_date'];
+    var lines = [head.join(',')];
+    TABLES.forEach(function (tb) {
+      for (var t = 0; t < N; t++) {
+        var ids = stmtRows(tb.table, t); if (!ids) continue;
+        ids.forEach(function (id) {
+          var r = M.raw(D, id, t); if (!r) return;
+          lines.push([monthKey(t), fyLabel(t), tb.table, id, csvQ(itemLabel(id)), ITEM[id].status].concat(r.map(function (v) { return v === null ? '' : v; })).join(','));
+        });
+      }
+    });
+    saveBlob(new Blob([lines.concat(csvFooter(head.length)).join('\n')], { type: 'text/csv' }), 'fiscal-monitor-dataset-' + monthKey(LAST) + '.csv');
+    toast('Downloading ' + num(lines.length - 1) + ' rows');
+  }
+  function citation() { return 'Finances of the Nation, ' + D.settings.tool_name + ', last modified ' + D.built + ', ' + D.settings.tool_url + '.'; }
+
+  /* ======================================================================
+     Shareable links (URL hash)
+     ====================================================================== */
+  function writeHash() {
+    var p = [];
+    if (S.sel.join('.') !== DEFAULTS.sel.join('.')) p.push('l=' + S.sel.join('.'));
+    if (S.tbl !== DEFAULTS.tbl) p.push('tbl=' + S.tbl);
+    if (S.col !== DEFAULTS.col) p.push('v=' + S.col);
+    if (S.meas !== DEFAULTS.meas) p.push('m=' + S.meas);
+    if (S.units !== DEFAULTS.units) p.push('u=' + S.units);
+    ['from', 'to', 'mon'].forEach(function (k) { if (S[k] !== DEFAULTS[k]) p.push(k + '=' + monthKey(S[k])); });
+    if (activeTab !== 'time') p.push('tab=' + activeTab);
+    var h = p.length === 1 && activeTab !== 'time' ? '#' + activeTab : (p.length ? '#' + p.join('&') : '');
+    try { history.replaceState(null, '', h || location.pathname + location.search); } catch (e) { /* sandboxed preview */ }
+    if (HOST) { try { HOST.history.replaceState(HOST.history.state, '', HOST.location.pathname + HOST.location.search + h); } catch (e) { /* ignore */ } }
+  }
+  function readHash() {
+    var h = location.hash || '';
+    if (h.length < 2 && HOST) { try { h = HOST.location.hash || ''; } catch (e) { /* ignore */ } }
+    h = h.replace(/^#/, ''); if (!h) return;
+    if (/^[a-z]+$/.test(h)) { if (document.querySelector('[data-tab="' + h + '"]')) activeTab = h; return; }
+    var q = {}; h.split('&').forEach(function (kv) { var a = kv.split('='); q[a[0]] = decodeURIComponent(a[1] || ''); });
+    if (q.l !== undefined) S.sel = q.l.split('.').map(Number).filter(function (id) { return ITEM[id] && ITEM[id].kind !== 'header'; }).slice(0, MAX_SERIES);
+    if (q.tbl && TABLE[+q.tbl]) S.tbl = +q.tbl;
+    if (q.v === 'm' || q.v === 'ytd') S.col = q.v;
+    if (q.m && MEAS[q.m]) S.meas = q.m;
+    if (q.u && UNIT[q.u]) S.units = q.u;
+    ['from', 'to'].forEach(function (k) { var t = parseKey(q[k]); if (t !== null) S[k] = t; });
+    var tm = parseKey(q.mon); if (tm !== null && REPORT_MONTHS.indexOf(tm) >= 0) S.mon = tm;
+    if (S.from > S.to) S.from = S.to;
+    if (q.tab && document.querySelector('[data-tab="' + q.tab + '"]')) activeTab = q.tab;
+  }
+
+  /* ======================================================================
+     Wire up and start
+     ====================================================================== */
+  function selectTab(name, section) {
+    activeTab = name;
+    document.querySelectorAll('.tab').forEach(function (u) { u.setAttribute('aria-selected', u.getAttribute('data-tab') === name ? 'true' : 'false'); });
+    document.querySelectorAll('.panel').forEach(function (pn) { pn.hidden = pn.getAttribute('data-panel') !== name; });
+    update();
+    revealTab();
+    if (section && $(section)) $(section).scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  /* ======================================================================
+     Layout for narrow screens and embedding
+       html.narrow: the tool is narrower than NARROW px (iPad portrait, narrow page columns, phones):
+                    results first, the government buttons above the headline numbers, and the
+                    other settings docked below the chart in one panel with tabs
+       html.phone:  narrower than PHONE px
+       html.emb:    inside an iframe whose page reports its scroll position ({fonView}), so the
+                    sidebar and the pinned summary bar are placed by script
+     ====================================================================== */
+  var NARROW = 1000, PHONE = 560, ROOT = document.documentElement;
+  var IN_FRAME = window.parent !== window, VIEW = null, pane = 'show', wasNarrow = null;
+  // Embedded in a page on the same site (the usual case on financesofthenation.ca): the tool sizes its
+  // own iframe, follows the page's scrolling, and keeps the page's address in step with the view, so
+  // the embed code is just an iframe. On another site it falls back to the postMessage protocol below.
+  var HOST = null, FRAME = null;
+  try { if (IN_FRAME && window.frameElement && window.parent.document) { HOST = window.parent; FRAME = window.frameElement; } } catch (e) { HOST = null; FRAME = null; }
+  function hostView() { var r = FRAME.getBoundingClientRect(); VIEW = { top: -r.top, height: HOST.innerHeight }; }
+  if (HOST) {
+    ROOT.classList.add('emb');
+    // data-fon-masthead="show" on the iframe keeps the tool's own logo and title
+    if (FRAME.getAttribute('data-fon-masthead') !== 'show') ROOT.classList.add('embedded');
+    FRAME.setAttribute('scrolling', 'no'); FRAME.style.overflow = 'hidden'; FRAME.style.display = 'block'; FRAME.style.border = '0';
+    hostView();
+    var hostQueued = false;
+    var onHost = function () {
+      if (hostQueued) return; hostQueued = true;
+      HOST.requestAnimationFrame(function () { hostQueued = false; hostView(); placeFloat(); });
+    };
+    HOST.addEventListener('scroll', onHost, { passive: true });
+    HOST.addEventListener('resize', onHost);
+  }
+  // The visible part of the tool, in its own coordinates (for tooltips)
+  function visTop() { return VIEW ? Math.max(0, VIEW.top) : 0; }
+  function visBottom() { return VIEW ? VIEW.top + VIEW.height : window.innerHeight; }
+  function isNarrow() { return ROOT.classList.contains('narrow'); }
+  function layout() {
+    var w = ROOT.clientWidth, narrow = w < NARROW;
+    ROOT.classList.toggle('narrow', narrow);
+    ROOT.classList.toggle('phone', w < PHONE);
+    ROOT.classList.toggle('notes-on', activeTab === 'notes');
+    if (narrow === wasNarrow) return;
+    wasNarrow = narrow;
+    $('intro').open = !narrow;
+    // the government buttons: above the headline numbers when narrow, in the sidebar when wide
+    var box = $('mon-box');
+    if (narrow) $('scope').appendChild(box);
+    else { var nx = $('tbl-h2'); nx.parentNode.insertBefore(box, nx); }
+  }
+  // Settings panel tabs (narrow screens): one group of settings at a time
+  var PANES = [['show', 'What to show'], ['years', 'Months'], ['dl', 'Download data']];
+  function buildDock() {
+    var h = $('dock-head');
+    if (!h.firstChild) {
+      h.innerHTML = '<div class="dock-title">Settings</div><div class="dock-tabs" role="tablist" aria-label="Settings">' + PANES.map(function (p) {
+        return '<button type="button" role="tab" data-pane-btn="' + p[0] + '">' + p[1] + '</button>';
+      }).join('') + '</div>';
+      h.querySelectorAll('[data-pane-btn]').forEach(function (b) {
+        b.addEventListener('click', function () { pane = b.getAttribute('data-pane-btn'); buildDock(); postHeight(); placeFloat(); });
+      });
+    }
+    h.querySelectorAll('[data-pane-btn]').forEach(function (b) { b.setAttribute('aria-selected', b.getAttribute('data-pane-btn') === pane ? 'true' : 'false'); });
+    document.querySelectorAll('.sidebar [data-pane]').forEach(function (e) { e.classList.toggle('on', e.getAttribute('data-pane') === pane); });
+  }
+  function getView() {
+    if (VIEW) return VIEW;
+    if (IN_FRAME) return null;   // embedded without scroll reports: nothing floats
+    return { top: window.pageYOffset, height: window.innerHeight };
+  }
+  function docTop(e) { return e.getBoundingClientRect().top + window.pageYOffset; }
+  function scrollToEl(e) {
+    var y = docTop(e) - 8;
+    if (HOST) HOST.scrollTo({ top: FRAME.getBoundingClientRect().top + HOST.pageYOffset + y, behavior: 'smooth' });
+    else if (VIEW) { try { window.parent.postMessage({ fonScrollTo: y }, '*'); } catch (err) { /* ignore */ } }
+    else window.scrollTo({ top: y, behavior: 'smooth' });
+  }
+  var pinKey = '';
+  function pinHTML() {
+    var out = '';
+    for (var i = 1; i <= 3; i++) {
+      var k = $('kpi' + i + '-k').textContent, v = $('kpi' + i + '-v').textContent;
+      if (!v || v === '–') continue;
+      out += '<span class="pin-k"><span class="pin-l" title="' + esc(k) + '">' + esc(k) + '</span><b>' + esc(v) + '</b></span>';
+    }
+    return out + (isNarrow() ? '<button type="button" class="btn pin-go" id="pin-go">Chart &uarr;</button>' : '');
+  }
+  function placeFloat() {
+    var v = getView(), pin = $('pin'), side = document.querySelector('.sidebar'), narrow = isNarrow();
+    var show = false, pinH = 0;
+    if (v && activeTab !== 'notes') {
+      var kp = $('kpis'), lay = document.querySelector('.layout');
+      var kb = docTop(kp) + kp.offsetHeight, lb = docTop(lay) + lay.offsetHeight;
+      show = v.top > kb - 6 && v.top < lb - 80;
+    }
+    if (show) {
+      var html = pinHTML();
+      if (html !== pinKey) {
+        $('pin-in').innerHTML = html; pinKey = html;
+        var go = $('pin-go');
+        if (go) go.addEventListener('click', function () { scrollToEl(document.querySelector('.tabs')); });
+      }
+      pin.classList.add('show');
+      if (VIEW) pin.style.top = v.top + 'px';
+      pinH = pin.offsetHeight;
+    } else pin.classList.remove('show');
+    // keep the sidebar in view on wide screens
+    if (narrow) { side.style.top = ''; side.style.maxHeight = ''; }
+    else if (VIEW) {
+      var g = document.querySelector('.layout'), gTop = docTop(g);
+      side.style.maxHeight = Math.max(240, VIEW.height - 24 - pinH) + 'px';
+      var off = VIEW.top + 12 + pinH - gTop;
+      side.style.top = Math.max(0, Math.min(off, g.offsetHeight - side.offsetHeight)) + 'px';
+    } else side.style.top = (12 + pinH) + 'px';
+  }
+  function postHeight() {
+    var h = Math.ceil(document.body.getBoundingClientRect().height);
+    if (HOST) { if (FRAME.style.height !== h + 'px') FRAME.style.height = h + 'px'; return; }
+    try { if (IN_FRAME) window.parent.postMessage({ fonHeight: h }, '*'); } catch (e) { /* ignore */ }
+  }
+  try { if (window.ResizeObserver && IN_FRAME) new ResizeObserver(function () { postHeight(); }).observe(document.body); } catch (e) { /* ignore */ }
+  window.addEventListener('scroll', function () { if (!VIEW) placeFloat(); }, { passive: true });
+  window.addEventListener('message', function (e) {
+    if (HOST || e.source !== window.parent || !e.data || !e.data.fonView) return;
+    var v = e.data.fonView;
+    if (!isFinite(v.top) || !isFinite(v.height)) return;
+    var first = !VIEW;
+    VIEW = { top: +v.top, height: +v.height };
+    if (first) ROOT.classList.add('emb');
+    placeFloat();
+    if (first) postHeight();
+  });
+  // Keep the selected view tab visible when the tab row scrolls sideways
+  function revealTab() {
+    var row = document.querySelector('.tabs'), b = row.querySelector('[aria-selected="true"]');
+    if (!b) return;
+    var l = b.offsetLeft - row.offsetLeft, r = l + b.offsetWidth;
+    if (l < row.scrollLeft) row.scrollLeft = Math.max(0, l - 16);
+    else if (r > row.scrollLeft + row.clientWidth) row.scrollLeft = r - row.clientWidth + 16;
+    tabEdges();
+  }
+  function tabEdges() {
+    var row = document.querySelector('.tabs');
+    row.classList.toggle('more-l', row.scrollLeft > 2);
+    row.classList.toggle('more-r', row.scrollLeft + row.clientWidth < row.scrollWidth - 2);
+  }
+
+
+  function init() {
+    document.querySelector('.tabs').addEventListener('scroll', tabEdges, { passive: true });
+    document.querySelectorAll('.m-first').forEach(function (e) { e.textContent = monthName(0); });
+    document.querySelectorAll('.m-last').forEach(function (e) { e.textContent = monthName(LAST); });
+    $('cite').innerHTML = '<b>How to cite:</b> ' + esc(citation());
+    document.querySelectorAll('.base-yr').forEach(function (e) { e.textContent = D.macro.base; });
+    document.querySelectorAll('.macro-last').forEach(function (e) { e.textContent = D.macro.last_year; });
+    document.querySelectorAll('.macro-growth').forEach(function (e) { e.textContent = (D.macro.last_year - 1) + '–' + D.macro.last_year; });
+    $('contact').textContent = D.settings.contact;
+    $('lic-year').textContent = D.settings.licence_year;
+
+    readHash();
+    buildControls();
+
+    $('reset').addEventListener('click', function () { S = clone(DEFAULTS); slots = {}; buildItemList(); update(); toast('Reset to the default view'); });
+    $('share').addEventListener('click', function () {
+      writeHash();
+      var url = HOST ? HOST.location.href : location.href, done = function () { toast('Link to this view copied'); };
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, function () { toast('Copy the address bar to share this view'); });
+        else toast('Copy the address bar to share this view');
+      } catch (e) { toast('Copy the address bar to share this view'); }
+    });
+    $('dl-all').addEventListener('click', downloadAll);
+
+    // Line picker: closes with Done, Escape, or a click anywhere outside it
+    var picker = $('picker');
+    function closePicker(focus) { if (!picker.open) return; picker.open = false; if (focus) picker.querySelector('summary').focus(); }
+    $('picker-done').addEventListener('click', function () { closePicker(true); });
+    picker.addEventListener('keydown', function (e) { if (e.key === 'Escape') { e.preventDefault(); closePicker(true); } });
+    document.addEventListener('click', function (e) { if (picker.open && !picker.contains(e.target)) closePicker(false); });
+
+    document.querySelectorAll('.tab').forEach(function (t) { t.addEventListener('click', function () { selectTab(t.getAttribute('data-tab')); }); });
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('[data-goto]');
+      if (!a) return;
+      e.preventDefault(); selectTab(a.getAttribute('data-goto'), a.getAttribute('data-section'));
+    });
+    document.querySelectorAll('[data-png]').forEach(function (b) { b.addEventListener('click', function () { downloadPNG(b.getAttribute('data-png')); }); });
+    document.querySelectorAll('[data-csv]').forEach(function (b) { b.addEventListener('click', function () { downloadCSV(b.getAttribute('data-csv')); }); });
+
+    var rt, lastW = document.querySelector('main').clientWidth;
+    window.addEventListener('resize', function () {
+      layout(); placeFloat();
+      clearTimeout(rt);
+      rt = setTimeout(function () { var w = document.querySelector('main').clientWidth; if (Math.abs(w - lastW) > 4) { lastW = w; renderActive(); } revealTab(); postHeight(); placeFloat(); }, 120);
+    });
+
+    update();
+    if (activeTab !== 'time') selectTab(activeTab);
+  }
+  init();
+})();
+// Tab row: arrow buttons for mouse users when tabs are off to the side (touch screens swipe instead)
+(function () {
+  var row = document.querySelector(".tabs"); if (!row) return;
+  var wrap = document.createElement("div"); wrap.className = "tabs-wrap";
+  row.parentNode.insertBefore(wrap, row); wrap.appendChild(row);
+  ["l", "r"].forEach(function (d) {
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "tab-arrow " + d; b.tabIndex = -1;   // keyboard users move between tabs with the arrow keys
+    b.setAttribute("aria-label", d === "l" ? "Show earlier tabs" : "Show more tabs");
+    b.innerHTML = d === "l" ? "&#8249;" : "&#8250;";
+    b.addEventListener("click", function () { row.scrollBy({ left: (d === "l" ? -1 : 1) * row.clientWidth * 0.7, behavior: "smooth" }); });
+    wrap.appendChild(b);
+  });
+  function edges() {
+    wrap.classList.toggle("more-l", row.scrollLeft > 2);
+    wrap.classList.toggle("more-r", row.scrollLeft + row.clientWidth < row.scrollWidth - 2);
+    Array.prototype.forEach.call(wrap.querySelectorAll(".tab-arrow"), function (b) { b.style.height = row.clientHeight + "px"; });
+  }
+  row.addEventListener("scroll", edges, { passive: true });
+  window.addEventListener("resize", edges);
+  try { new ResizeObserver(edges).observe(row); } catch (e) { /* older browsers: scroll and resize still update it */ }
+  edges();
+})();
+</script>
+</body>
+</html>

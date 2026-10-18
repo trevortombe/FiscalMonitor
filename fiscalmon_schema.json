@@ -1,0 +1,681 @@
+{
+  "description": "fiscalmon-clean.xlsx schema \u2014 use Dec 2025 as structural template for all 2024/25 months",
+  "columns": [
+    "date",
+    "fiscalyear",
+    "year",
+    "month",
+    "fyear",
+    "fymon",
+    "tablenum",
+    "title",
+    "rowid",
+    "id",
+    "name",
+    "prior_year",
+    "this_year",
+    "prior_FY_to_date",
+    "current_FY_to_date"
+  ],
+  "read_xlsx": "data=open(path,'rb').read(); eocd=data.rfind(b'PK\\x05\\x06'); wb=openpyxl.load_workbook(io.BytesIO(data[:eocd+22]))",
+  "month_metadata": {
+    "note": "fymon: Apr=1 Mar=12. fyear: calendar year FY starts. fiscalyear e.g. 2024/25",
+    "pending_months": []
+  },
+  "special_cases": {
+    "id104_program_expenses": "SYNTHETIC = id103 (prog excl actuarial) + id107 (net actuarial losses). Both values and FY_to_date.",
+    "id103_rowid": "9006 always (historical sentinel)",
+    "table7_year_percent_change": "Absolute change (this_year - prior_year), NOT a percentage",
+    "table7_prior_year": "March 31 start-of-FY balance, not same-month prior year",
+    "cash_balance_point_in_time": "id=116 (T1 row15) and id=631 (T6 row15): prior_year=None, this_year=None; values go in prior_FY_to_date and current_FY_to_date",
+    "id214_pre_apr2025": "Pollution Pricing Proceeds To Be Returned To Canadians",
+    "id214_post_apr2025": "Fuel Charge Proceeds (fuel charge removed April 1 2025)",
+    "id344_pre_apr2025": "Pollution Pricing Proceeds Returned To Canadians",
+    "id344_post_apr2025": "Fuel Charge Proceeds Returned",
+    "table7_omitted_rows": "FX liabilities, derivative liabilities (rows 19-20) and FX assets, derivative assets (rows 24-25) are not stored \u2014 consistent with original dataset",
+    "table3_structure_change": "id=313 header, id=781 Health Agreements, id=328 Total Provincial Transfers added in ~2024. Earlier months in dataset may lack these rows.",
+    "fy2026_27_dropped_rows": "From 2026m4: id=214 (Fuel Charge Proceeds, T2) and id=309 (COVID-19 income support, T3) no longer published; Finance folded them into Other Revenues (217) and Other Transfer Payments (346), incl. restated prior-year columns. Rows omitted -> 95 rows/month without T7.",
+    "id325_post_apr2026": "Build Communities Strong Fund - Community Stream (renamed Canada Community-Building Fund; same series)",
+    "id304_label": "Report now labels it 'Old Age Security program'; stored name kept as 'Elderly Benefits'",
+    "id344_label_2026_27": "Report again labels it 'Pollution pricing proceeds returned to Canadians'; stored name kept as 'Fuel Charge Proceeds Returned'",
+    "combined_apr_may_cash": "Combined Apr+May release (/YYYY/04.html) omits end-of-April cash; derive as end-May cash minus May change in cash (ids 116/631).",
+    "dashboard_update": "Append new months to existing DB.data series only (do not regenerate wholesale: dashboard omits some header-only series). Dashboard data now matches the CSV exactly (2003-07 id104 sign fixed 2026-09-27).",
+    "historical_backfill_2026_10_03": "2000m1-2007m12 rebuilt against archive/YYYYMMtabN.csv (tab1->T1, tab2->T2, tab3->T3, tab4->T5, tab5->T6, tab6->T7; 200312tab6.xlsx used where no CSV; 200208 tab5/tab6 are swapped in the archive). rowid = line number in the archive file. Combined Apr+May files (200504, 200704) supply both months. Zeros stored as '-'. Log: fiscalmon-backfill-log_2026-10-03.csv; pre-backfill copy: fiscalmon-clean_backup_2026-10-03.csv. fiscalyear column restored to YYYY/YY for all rows.",
+    "pre2008_id_conventions": "T3 'Total' lines: transfers to persons=311, support for health and social programs subtotal=322 (only when a second total follows), transfers to other levels of govt=328, subsidies and other transfers=346, crown corporations=361, old-format operating and capital=367. T6 first Total=617, second (after foreign currency)=623.",
+    "number_format": "Write values with thousands separators (e.g. \"10,654\"), as in all earlier rows. Months 2025m2-2026m7 had been appended without them; fixed 2026-10-03.",
+    "audit_2008_2026_2026_10_03": "Second pass (log: fiscalmon-audit-log_2026-10-03.csv; pre-pass copy: fiscalmon-clean_backup_2026-10-03_pass1.csv). Archive fills 2008-2013; T5 May 2008-2017 FYTD fixed; ids 214/344/328 filled 2024m2-2025m1 and 311/328 2019m4-2020m5 from canada.ca; id 738 merged into 739. Known remaining: T3 ids change meaning across eras (346/347/348/373; 354 vs 365 from 2019m4) - not harmonised.",
+    "pdf_2005_10_11": "2005m10 and 2005m11 built from F12-4-2005-10-eng.pdf / F12-4-2005-11-eng.pdf; archive/200510tab1-6.xlsx and 200511tab1-6.xlsx created from them (same layout as other archive files; rowid = row in those files)."
+  },
+  "safe_pct": "round((new-old)/abs(old)*100, 1) if old != 0 else None. Table 1 percentages computed same way.",
+  "tables": {
+    "1": [
+      {
+        "rowid": 3,
+        "id": 100,
+        "name": "Budgetary Transactions"
+      },
+      {
+        "rowid": 4,
+        "id": 101,
+        "name": "Revenues"
+      },
+      {
+        "rowid": 5,
+        "id": 102,
+        "name": "Expenses"
+      },
+      {
+        "rowid": 6,
+        "id": 104,
+        "name": "Program Expenses"
+      },
+      {
+        "rowid": 7,
+        "id": 105,
+        "name": "Public Debt Charges"
+      },
+      {
+        "rowid": 8,
+        "id": 106,
+        "name": "Budgetary Balance, Excluding Net Actuarial Losses"
+      },
+      {
+        "rowid": 9,
+        "id": 107,
+        "name": "Net Actuarial Losses"
+      },
+      {
+        "rowid": 10,
+        "id": 108,
+        "name": "Budgetary Balance(Deficit/Surplus)"
+      },
+      {
+        "rowid": 11,
+        "id": 110,
+        "name": "Non-Budgetary Transactions"
+      },
+      {
+        "rowid": 12,
+        "id": 111,
+        "name": "Financial Requirements/Source"
+      },
+      {
+        "rowid": 13,
+        "id": 113,
+        "name": "Net Change In Financing Activities"
+      },
+      {
+        "rowid": 14,
+        "id": 114,
+        "name": "Net Change in Cash Balances"
+      },
+      {
+        "rowid": 15,
+        "id": 116,
+        "name": "Cash Balance At End Of Period"
+      },
+      {
+        "rowid": 9006,
+        "id": 103,
+        "name": "Program Expenses, Excluding Net Actuarial Losses"
+      }
+    ],
+    "2": [
+      {
+        "rowid": 4,
+        "id": 200,
+        "name": "Tax Revenues"
+      },
+      {
+        "rowid": 5,
+        "id": 201,
+        "name": "Income Taxes"
+      },
+      {
+        "rowid": 6,
+        "id": 202,
+        "name": "Personal Income Tax"
+      },
+      {
+        "rowid": 7,
+        "id": 203,
+        "name": "Corporate Income Tax"
+      },
+      {
+        "rowid": 8,
+        "id": 204,
+        "name": "Non-Resident Income Tax"
+      },
+      {
+        "rowid": 9,
+        "id": 205,
+        "name": "Total Income Tax Revenues"
+      },
+      {
+        "rowid": 10,
+        "id": 206,
+        "name": "Other Taxes And Duties"
+      },
+      {
+        "rowid": 11,
+        "id": 207,
+        "name": "Goods And Services Tax"
+      },
+      {
+        "rowid": 12,
+        "id": 208,
+        "name": "Energy Taxes"
+      },
+      {
+        "rowid": 13,
+        "id": 209,
+        "name": "Customs Import Duties"
+      },
+      {
+        "rowid": 14,
+        "id": 210,
+        "name": "Other Excise Taxes And Duties"
+      },
+      {
+        "rowid": 15,
+        "id": 211,
+        "name": "Total Other Taxes And Duties"
+      },
+      {
+        "rowid": 16,
+        "id": 213,
+        "name": "Total Tax Revenues"
+      },
+      {
+        "rowid": 17,
+        "id": 214,
+        "name": "Fuel Charge Proceeds"
+      },
+      {
+        "rowid": 18,
+        "id": 215,
+        "name": "Employment Insurance Premium Revenues"
+      },
+      {
+        "rowid": 19,
+        "id": 217,
+        "name": "Other Revenues"
+      },
+      {
+        "rowid": 20,
+        "id": 218,
+        "name": "Total Revenues"
+      }
+    ],
+    "3": [
+      {
+        "rowid": 4,
+        "id": 301,
+        "name": "Major Transfers To Persons"
+      },
+      {
+        "rowid": 5,
+        "id": 304,
+        "name": "Elderly Benefits"
+      },
+      {
+        "rowid": 6,
+        "id": 305,
+        "name": "Employment Insurance Benefits"
+      },
+      {
+        "rowid": 7,
+        "id": 309,
+        "name": "COVID-19 income support for workers"
+      },
+      {
+        "rowid": 8,
+        "id": 310,
+        "name": "Children's Benefits"
+      },
+      {
+        "rowid": 9,
+        "id": 311,
+        "name": "Total Major Transfers To Persons"
+      },
+      {
+        "rowid": 10,
+        "id": 313,
+        "name": "Major Transfers To Other Levels Of Government"
+      },
+      {
+        "rowid": 11,
+        "id": 318,
+        "name": "Canada Health Transfer"
+      },
+      {
+        "rowid": 12,
+        "id": 319,
+        "name": "Canada Social Transfer"
+      },
+      {
+        "rowid": 13,
+        "id": 323,
+        "name": "Equalization"
+      },
+      {
+        "rowid": 14,
+        "id": 324,
+        "name": "Territorial Formula Financing"
+      },
+      {
+        "rowid": 15,
+        "id": 384,
+        "name": "Canada-wide early learning and child care"
+      },
+      {
+        "rowid": 16,
+        "id": 325,
+        "name": "Canada Community-Building Fund"
+      },
+      {
+        "rowid": 17,
+        "id": 781,
+        "name": "Health Agreements With Provinces/Territories"
+      },
+      {
+        "rowid": 18,
+        "id": 327,
+        "name": "Other Fiscal Arrangements"
+      },
+      {
+        "rowid": 19,
+        "id": 328,
+        "name": "Total Major Transfers To Other Levels Of Government"
+      },
+      {
+        "rowid": 20,
+        "id": 344,
+        "name": "Fuel Charge Proceeds Returned"
+      },
+      {
+        "rowid": 21,
+        "id": 333,
+        "name": "Direct Program Expenses"
+      },
+      {
+        "rowid": 22,
+        "id": 346,
+        "name": "Other Transfer Payments"
+      },
+      {
+        "rowid": 23,
+        "id": 365,
+        "name": "Operating Expenses"
+      },
+      {
+        "rowid": 24,
+        "id": 368,
+        "name": "Total Direct Program Expenses"
+      },
+      {
+        "rowid": 25,
+        "id": 369,
+        "name": "Total Program Expenses, Excluding Net Actuarial Losses"
+      },
+      {
+        "rowid": 26,
+        "id": 370,
+        "name": "Public Debt Charges"
+      },
+      {
+        "rowid": 27,
+        "id": 371,
+        "name": "Total Expenses, Excluding Net Actuarial Losses"
+      },
+      {
+        "rowid": 28,
+        "id": 372,
+        "name": "Net Actuarial Losses"
+      },
+      {
+        "rowid": 29,
+        "id": 376,
+        "name": "Total Expenses"
+      }
+    ],
+    "4": [
+      {
+        "rowid": 4,
+        "id": 400,
+        "name": "Transfer Payments"
+      },
+      {
+        "rowid": 5,
+        "id": 401,
+        "name": "Other Expenses"
+      },
+      {
+        "rowid": 6,
+        "id": 403,
+        "name": "Personnel, Excluding Net Actuarial Losses"
+      },
+      {
+        "rowid": 7,
+        "id": 404,
+        "name": "Transportation And Communications"
+      },
+      {
+        "rowid": 8,
+        "id": 405,
+        "name": "Information"
+      },
+      {
+        "rowid": 9,
+        "id": 406,
+        "name": "Professional And Special Services"
+      },
+      {
+        "rowid": 10,
+        "id": 407,
+        "name": "Rentals"
+      },
+      {
+        "rowid": 11,
+        "id": 408,
+        "name": "Repair And Maintenance"
+      },
+      {
+        "rowid": 12,
+        "id": 409,
+        "name": "Utilities, Materials And Supplies"
+      },
+      {
+        "rowid": 13,
+        "id": 410,
+        "name": "Other Subsidies And Expenses"
+      },
+      {
+        "rowid": 14,
+        "id": 411,
+        "name": "Amortization Of Tangible Capital Assets"
+      },
+      {
+        "rowid": 15,
+        "id": 412,
+        "name": "Net Loss On Disposal Of Assets"
+      },
+      {
+        "rowid": 16,
+        "id": 413,
+        "name": "Total Other Expenses"
+      },
+      {
+        "rowid": 17,
+        "id": 414,
+        "name": "Total Program Expenses, Excluding Net Actuarial Losses"
+      },
+      {
+        "rowid": 18,
+        "id": 415,
+        "name": "Public Debt Charges"
+      },
+      {
+        "rowid": 19,
+        "id": 416,
+        "name": "Total Expenses, Excluding Net Actuarial Losses"
+      },
+      {
+        "rowid": 20,
+        "id": 417,
+        "name": "Net Actuarial Losses"
+      },
+      {
+        "rowid": 21,
+        "id": 419,
+        "name": "Total Expenses"
+      }
+    ],
+    "5": [
+      {
+        "rowid": 3,
+        "id": 500,
+        "name": "Budgetary Balance(Deficit/Surplus)"
+      },
+      {
+        "rowid": 4,
+        "id": 501,
+        "name": "Non-Budgetary Transactions"
+      },
+      {
+        "rowid": 5,
+        "id": 513,
+        "name": "Accounts Payable And Accrued Liabilities and Accounts Receivable"
+      },
+      {
+        "rowid": 6,
+        "id": 515,
+        "name": "Pensions, Other Future Benefits, And Other Liabilities"
+      },
+      {
+        "rowid": 7,
+        "id": 516,
+        "name": "Foreign Exchange Transactions"
+      },
+      {
+        "rowid": 8,
+        "id": 518,
+        "name": "Loans, Investments And Advances"
+      },
+      {
+        "rowid": 9,
+        "id": 519,
+        "name": "Non-Financial Assets"
+      },
+      {
+        "rowid": 10,
+        "id": 520,
+        "name": "Total Non-Budgetary Transactions"
+      },
+      {
+        "rowid": 11,
+        "id": 522,
+        "name": "Financial Requirements/Source"
+      }
+    ],
+    "6": [
+      {
+        "rowid": 3,
+        "id": 600,
+        "name": "Financial Requirements/Source"
+      },
+      {
+        "rowid": 4,
+        "id": 601,
+        "name": "Net increase (+)/decrease (-) in financing activities"
+      },
+      {
+        "rowid": 5,
+        "id": 604,
+        "name": "Unmatured Debt Transactions"
+      },
+      {
+        "rowid": 6,
+        "id": 605,
+        "name": "Canadian Currency Borrowings"
+      },
+      {
+        "rowid": 7,
+        "id": 606,
+        "name": "Marketable Bonds"
+      },
+      {
+        "rowid": 8,
+        "id": 610,
+        "name": "Treasury Bills"
+      },
+      {
+        "rowid": 9,
+        "id": 617,
+        "name": "Total Canadian Currency Borrowings"
+      },
+      {
+        "rowid": 10,
+        "id": 619,
+        "name": "Foreign Currency Borrowings"
+      },
+      {
+        "rowid": 11,
+        "id": 623,
+        "name": "Total Market Debt Transactions"
+      },
+      {
+        "rowid": 12,
+        "id": 626,
+        "name": "Obligations Related To Capital Leases And Other Unmatured Debt"
+      },
+      {
+        "rowid": 13,
+        "id": 628,
+        "name": "Net Change In Financing Activities"
+      },
+      {
+        "rowid": 14,
+        "id": 630,
+        "name": "Change In Cash Balance"
+      },
+      {
+        "rowid": 15,
+        "id": 631,
+        "name": "Cash Balance At End Of Period"
+      }
+    ],
+    "7": [
+      {
+        "rowid": 2,
+        "id": 700,
+        "name": "Liabilities"
+      },
+      {
+        "rowid": 3,
+        "id": 702,
+        "name": "Accounts Payable And Accrued Liabilities"
+      },
+      {
+        "rowid": 4,
+        "id": 704,
+        "name": "Interest-Bearing Debt"
+      },
+      {
+        "rowid": 5,
+        "id": 708,
+        "name": "Unmatured Debt"
+      },
+      {
+        "rowid": 6,
+        "id": 709,
+        "name": "Payable In Canadian Dollars"
+      },
+      {
+        "rowid": 7,
+        "id": 710,
+        "name": "Marketable Bonds"
+      },
+      {
+        "rowid": 8,
+        "id": 713,
+        "name": "Treasury Bills"
+      },
+      {
+        "rowid": 9,
+        "id": 721,
+        "name": "Subtotal"
+      },
+      {
+        "rowid": 10,
+        "id": 718,
+        "name": "Payable In Foreign Currencies"
+      },
+      {
+        "rowid": 11,
+        "id": 724,
+        "name": "Obligations Related To Capital Leases And Other Unmatured Debt"
+      },
+      {
+        "rowid": 12,
+        "id": 725,
+        "name": "Total Unmatured Debt"
+      },
+      {
+        "rowid": 13,
+        "id": 726,
+        "name": "Pensions, Other Future Benefits, And Other Liabilities"
+      },
+      {
+        "rowid": 14,
+        "id": 727,
+        "name": "Public Sector Pensions"
+      },
+      {
+        "rowid": 15,
+        "id": 729,
+        "name": "Other Employee And Veteran Future Benefits"
+      },
+      {
+        "rowid": 16,
+        "id": 730,
+        "name": "Other Liabilities"
+      },
+      {
+        "rowid": 17,
+        "id": 731,
+        "name": "Total Pension And Other Accounts"
+      },
+      {
+        "rowid": 18,
+        "id": 732,
+        "name": "Total Interest-Bearing Debt"
+      },
+      {
+        "rowid": 21,
+        "id": 733,
+        "name": "Total Liabilities"
+      },
+      {
+        "rowid": 22,
+        "id": 734,
+        "name": "Financial Assets"
+      },
+      {
+        "rowid": 23,
+        "id": 736,
+        "name": "Cash And Accounts Receivable"
+      },
+      {
+        "rowid": 26,
+        "id": 739,
+        "name": "Loans, Investments And Advances(Net Of Allowances)"
+      },
+      {
+        "rowid": 27,
+        "id": 740,
+        "name": "Public Sector Pension Assets"
+      },
+      {
+        "rowid": 28,
+        "id": 741,
+        "name": "Total Financial Assets"
+      },
+      {
+        "rowid": 29,
+        "id": 743,
+        "name": "Net Debt"
+      },
+      {
+        "rowid": 30,
+        "id": 744,
+        "name": "Non-Financial Assets"
+      },
+      {
+        "rowid": 31,
+        "id": 745,
+        "name": "Federal Debt(Accumulated Deficit)"
+      }
+    ]
+  }
+}
