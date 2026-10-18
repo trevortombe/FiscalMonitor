@@ -24,6 +24,14 @@ financesofthenation.ca as before.
 Anything unusual (a renamed or new line, a table that doesn't add up, revisions) is resolved in
 the pull request and explained there. `CLAUDE.md` has the full procedure.
 
+## GitHub Pages
+
+The repository is also served with GitHub Pages (Settings → Pages → Deploy from a branch → `main`, `/ (root)`):
+https://trevortombe.github.io/FiscalMonitor/ opens the explorer, and each merged update republishes it.
+The financesofthenation.ca copy remains the one embedded in WordPress: the explorer's embedded mode
+(hiding its masthead, sizing the iframe, following the page address) needs the tool and the page on the
+same domain. To embed the GitHub Pages copy elsewhere, use the cross-domain snippet in `explorer/README.md`.
+
 ## Working locally
 
 Clone once, then `git pull` before working on the files. To add a month by hand:
