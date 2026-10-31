@@ -63,8 +63,8 @@
   main { min-width: 0; }
   body { position: relative; }
 
-  .sidebar { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow-y: auto; overscroll-behavior: contain; }
-  html.emb .sidebar { position: relative; top: 0; max-height: none; }
+  .sidebar { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; position: static; top: auto; max-height: none; overflow: visible; overscroll-behavior: contain; }
+  html.emb .sidebar { position: static; top: auto; max-height: none; overflow: visible}
   .narrow .layout { display: flex; flex-direction: column; gap: 16px; }
   .narrow main { order: 1; width: 100%; }
   .narrow .sidebar { order: 2; width: 100%; position: static; max-height: none; overflow: visible; padding: 12px 14px 14px; }
@@ -817,20 +817,34 @@
     return y + 6;
   }
   function sourceCap() {
-    return 'Source: Finance Canada, The Fiscal Monitor' + (S.units === 'nom' ? '' : '; FON macro data') + '. See ' + D.settings.tool_url + ' for details. CC BY 4.0';
+    return 'Source: Finance Canada, The Fiscal Monitor' + (S.units === 'nom' ? '' : '; FON macro data') + '.\nSee ' + D.settings.tool_url + ' for details. CC BY 4.0';
   }
-  function footer(svg, W, narrow, pad, fy0) {
-    var logo = $('fon-logo'), lh = narrow ? 18 : 22, lw = lh * 1109 / 140;
-    if (logo && logo.src) s('image', { href: logo.src, x: pad, y: fy0, width: lw, height: lh }, svg);
-    var cap = sourceCap();
-    if (narrow) wrap(cap, 10.5, 400, W - 2 * pad).forEach(function (l, k) { s('text', { x: pad, y: fy0 + lh + 16 + k * 14, 'font-size': 10.5, fill: '#6b717b' }, svg, l); });
-    else s('text', { x: W - pad, y: fy0 + lh - 5, 'text-anchor': 'end', 'font-size': 11, fill: '#6b717b' }, svg, cap);
-  }
-  function footerH(W, narrow, pad) {
-    if (!narrow) return 44;
-    var cap = sourceCap();
-    return 18 + 16 + wrap(cap, 10.5, 400, W - 2 * pad).length * 14 + 6;
-  }
+  
+function footer(svg, W, narrow, pad, fy0) {
+  var logo = $('fon-logo'), lh = narrow ? 18 : 22, lw = lh * 1109 / 140;
+  if (logo && logo.src)
+    s('image', { href: logo.src, x: pad, y: fy0, width: lw, height: lh }, svg);
+
+  var lines = sourceCap().split('\n');
+  var x = narrow ? pad : W - pad;
+
+  lines.forEach(function (line, i) {
+    s('text', {
+      x: x,
+      y: fy0 + 12 + i * 14,
+      'text-anchor': narrow ? 'start' : 'end',
+      'font-size': narrow ? 10.5 : 11,
+      fill: '#6b717b'
+    }, svg, line);
+  });
+}
+
+  
+function footerH(W, narrow, pad) {
+  var lh = narrow ? 18 : 22;
+  return lh + 16 + sourceCap().split('\n').length * 14 + 6;
+}
+
   function emptyNote(svg, x, y, msg) { s('text', { x: x, y: y, 'text-anchor': 'middle', 'font-size': 14, fill: '#6b717b' }, svg, msg); }
 
   // Plain-sentence description of the current measure, for subtitles and table notes
@@ -1380,14 +1394,6 @@
       if (VIEW) pin.style.top = v.top + 'px';
       pinH = pin.offsetHeight;
     } else pin.classList.remove('show');
-    // keep the sidebar in view on wide screens
-    if (narrow) { side.style.top = ''; side.style.maxHeight = ''; }
-    else if (VIEW) {
-      var g = document.querySelector('.layout'), gTop = docTop(g);
-      side.style.maxHeight = Math.max(240, VIEW.height - 24 - pinH) + 'px';
-      var off = VIEW.top + 12 + pinH - gTop;
-      side.style.top = Math.max(0, Math.min(off, g.offsetHeight - side.offsetHeight)) + 'px';
-    } else side.style.top = (12 + pinH) + 'px';
   }
   function postHeight() {
     var h = Math.ceil(document.body.getBoundingClientRect().height);
