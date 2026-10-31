@@ -33,7 +33,7 @@ SETTINGS <- list(
   contact      = "ttombe@ucalgary.ca",
   real_base    = 2020                      # "2020 dollars": CPI averages 100 in this year
 )
-MACRO_URL  <- "https://raw.githubusercontent.com/FONCanada/FONmacro/main/MacroData.csv"
+MACRO_URL  <- "https://github.com/FONCanada/FONmacro/raw/refs/heads/main/MacroData.csv"
 MACRO_FILE <- "data/macro.csv"
 MACRO_VARS <- c(gdp = "Nominal GDP (Millions)", pop = "Population", cpi = "Canada-Wide CPI (2020=100)")
 INPUT  <- "../fiscalmon-clean.csv"
