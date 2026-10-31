@@ -83,7 +83,7 @@ Make a page titled **Fiscal Monitor Explorer** with layout "No Sidebar, Full Wid
 
 That is all it needs. The tool and the WordPress page are on the same site, so the tool integrates itself with the page (embedded mode):
 
-- **Masthead.** It hides its own logo and title and its side padding, so it lines up under the page title. The theme CSS (`Website/fon-tools-theme.css`, already in Appearance → Customize → Additional CSS) styles the page title to match for any iframe with `class="fon-tool"`. Add `data-fon-masthead="show"` to the iframe to keep the tool's own masthead.
+- **No masthead.** The tool has no logo, title or side padding of its own, wherever it is shown; the page supplies them, so it lines up under the page title. The theme CSS (`Website/fon-tools-theme.css`, already in Appearance → Customize → Additional CSS) styles the page title to match for any iframe with `class="fon-tool"`. (The logo still appears in the footer of charts saved as images.)
 - **Height.** It sets the iframe's height to fit its content whenever that changes, so there is no inner scroll bar. The 1500px is only a starting value.
 - **Scrolling.** It follows the page's scroll position to keep the sidebar in view on wide screens, to pin a slim bar with the headline numbers at the top of the screen once they scroll away, and to place its pop-up messages and tooltips. "Chart ↑" scrolls the page.
 - **Address.** The page's address follows the view, and "Copy link to this view" copies the page's address, so shared links and bookmarks open the WordPress page at that view.
@@ -94,7 +94,7 @@ On narrow screens (iPad portrait, phones, narrow page columns) the tool puts the
 
 The address shown in chart footers and the citation (`tool_url`, www.financesofthenation.ca/fiscal-monitor) is set at the top of `build.R`. Every view is saved in the URL hash; `#notes` opens the Notes tab.
 
-**On another site** (a different domain), the tool cannot reach the page directly. It then keeps its masthead and falls back to messages: it posts its height (`{fonHeight}`) and scroll requests (`{fonScrollTo}`), and accepts the visible part of the tool from the page (`{fonView: {top, height}}`). Use this longer snippet there:
+**On another site** (a different domain), the tool cannot reach the page directly. It then falls back to messages: it posts its height (`{fonHeight}`) and scroll requests (`{fonScrollTo}`), and accepts the visible part of the tool from the page (`{fonView: {top, height}}`). Use this longer snippet there:
 
 ```html
 <iframe id="fon-tool" src="https://financesofthenation.ca/fiscal_monitor/"

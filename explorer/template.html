@@ -42,12 +42,8 @@
   a { color: var(--accent); }
   button, input, select { font: inherit; color: inherit; }
 
-  .wrap { max-width: 1320px; margin: 0 auto; padding: 20px 20px 40px; }
-
-  /* ---------- Masthead ---------- */
-  .masthead { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 28px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
-  .masthead img { height: 34px; width: auto; display: block; }
-  .masthead h1 { margin: 0; font-size: 22px; line-height: 1.2; font-weight: 650; color: var(--fon-red); letter-spacing: -0.01em; }
+  /* No masthead: the tool is always embedded in a page that supplies the logo, title and side margins */
+  .wrap { max-width: 1320px; margin: 0 auto; padding: 4px 0 24px; }
   .intro { margin: 14px 0 20px; max-width: 900px; color: var(--ink-2); font-size: 14.5px; }
   .intro p { margin: 0 0 8px; }
   .intro > summary { display: none; }
@@ -104,12 +100,8 @@
   .pin-l { color: var(--muted); font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 300px; }
   .pin-k b { font-variant-numeric: tabular-nums; white-space: nowrap; }
   .pin-go { margin-left: auto; padding: 4px 10px; font-size: 12.5px; }
-  .phone .wrap { padding: 16px 16px 32px; }
-  /* Embedded in a Finances of the Nation page: the page supplies the logo, title and side margins */
-  .embedded .masthead { display: none; }
-  .embedded .wrap, .embedded.phone .wrap { padding: 4px 0 24px; }
-  .embedded .intro { margin-top: 0; }
-  .embedded .pin-in { padding-left: 0; padding-right: 0; }
+  .intro, .narrow .intro { margin-top: 0; }
+  .pin-in { padding-left: 0; padding-right: 0; }
   .phone .dock-tabs button { padding: 6px 8px; font-size: 13px; }
   .phone .pin-in { padding: 6px 12px; gap: 2px 12px; font-size: 12.5px; }
   .phone .pin-l { max-width: 170px; }
@@ -275,10 +267,8 @@
 <body>
 <div class="wrap">
 
-  <header class="masthead">
-    <a href="https://financesofthenation.ca/" target="_top"><img id="fon-logo" src="FON_logo.png" alt="Finances of the Nation"></a>
-    <h1>Fiscal Monitor Explorer</h1>
-  </header>
+  <!-- Logo used only in the footer of charts saved as images; never shown on the page -->
+  <img id="fon-logo" src="FON_logo.png" alt="" hidden>
 
   <details class="intro" id="intro" open>
     <summary>About this explorer and how to use it</summary>
@@ -1309,8 +1299,6 @@ function footerH(W, narrow, pad) {
   function hostView() { var r = FRAME.getBoundingClientRect(); VIEW = { top: -r.top, height: HOST.innerHeight }; }
   if (HOST) {
     ROOT.classList.add('emb');
-    // data-fon-masthead="show" on the iframe keeps the tool's own logo and title
-    if (FRAME.getAttribute('data-fon-masthead') !== 'show') ROOT.classList.add('embedded');
     FRAME.setAttribute('scrolling', 'no'); FRAME.style.overflow = 'hidden'; FRAME.style.display = 'block'; FRAME.style.border = '0';
     hostView();
     var hostQueued = false;
