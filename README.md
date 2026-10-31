@@ -28,9 +28,11 @@ the pull request and explained there. `CLAUDE.md` has the full procedure.
 
 The repository is also served with GitHub Pages (Settings → Pages → Deploy from a branch → `main`, `/ (root)`):
 https://trevortombe.github.io/FiscalMonitor/ opens the explorer, and each merged update republishes it.
-The financesofthenation.ca copy remains the one embedded in WordPress: the explorer's embedded mode
-(hiding its masthead, sizing the iframe, following the page address) needs the tool and the page on the
-same domain. To embed the GitHub Pages copy elsewhere, use the cross-domain snippet in `explorer/README.md`.
+The explorer has no masthead of its own (no logo or title), so it is meant to be embedded in a page.
+Uploaded to financesofthenation.ca and embedded there, a plain iframe is enough: the tool sizes the iframe,
+follows the page's scrolling and keeps the page address in step with the view. Embedded from another domain
+(including the GitHub Pages copy embedded on financesofthenation.ca), use the cross-domain snippet in
+`explorer/README.md` so the iframe is sized and scrolling works; the page address does not follow the view.
 
 ## Working locally
 
