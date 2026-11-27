@@ -94,20 +94,23 @@ On narrow screens (iPad portrait, phones, narrow page columns) the tool puts the
 
 The address shown in chart footers and the citation (`tool_url`, www.financesofthenation.ca/fiscal-monitor) is set at the top of `build.R`. Every view is saved in the URL hash; `#notes` opens the Notes tab.
 
-**On another site** (a different domain), the tool cannot reach the page directly. It then falls back to messages: it posts its height (`{fonHeight}`) and scroll requests (`{fonScrollTo}`), and accepts the visible part of the tool from the page (`{fonView: {top, height}}`). Use this longer snippet there:
+**On another site** (a different domain, e.g. the GitHub Pages copy at `trevortombe.github.io` embedded in financesofthenation.ca), the tool cannot reach the page directly. It then falls back to messages: it posts its height (`{fonHeight}`), scroll requests (`{fonScrollTo}`) and its view (`{fonHash}`, e.g. `"#tab=tables"`, or `""` for the default view); it accepts the visible part of the tool (`{fonView: {top, height}}`) and the page's address (`{fonPage}`) from the page. Use this longer snippet there. It passes the page's `#...` view to the tool when it loads, keeps the page's address in step with the view, and lets "Copy link to this view" copy the page's address, so shared links open the WordPress page at that view:
 
 ```html
-<iframe id="fon-tool" src="https://financesofthenation.ca/fiscal_monitor/"
-        title="Fiscal Monitor Explorer"
+<iframe id="fon-tool" class="fon-tool"
+        data-src="https://trevortombe.github.io/FiscalMonitor/explorer/fiscal_monitor.html"
+        title="Fiscal Monitor Explorer" allow="clipboard-write"
         style="display:block;width:100%;height:1500px;border:0;overflow:hidden"
-        scrolling="no" loading="lazy"></iframe>
+        scrolling="no"></iframe>
 <script>
   (function () {
     var f = document.getElementById("fon-tool"), queued = false;
+    f.src = f.getAttribute("data-src") + location.hash;          // open the tool at the page's view
     function view() {
       queued = false;
       if (!f.contentWindow) return;
-      f.contentWindow.postMessage({ fonView: { top: -f.getBoundingClientRect().top, height: window.innerHeight } }, "*");
+      f.contentWindow.postMessage({ fonView: { top: -f.getBoundingClientRect().top, height: window.innerHeight },
+                                    fonPage: location.href.split("#")[0] }, "*");
     }
     function queue() { if (!queued) { queued = true; requestAnimationFrame(view); } }
     window.addEventListener("message", function (e) {
@@ -115,6 +118,8 @@ The address shown in chart footers and the citation (`tool_url`, www.financesoft
       if (e.data.fonHeight) { f.style.height = Math.ceil(e.data.fonHeight) + 20 + "px"; queue(); }
       if (typeof e.data.fonScrollTo === "number")
         window.scrollTo({ top: f.getBoundingClientRect().top + window.pageYOffset + e.data.fonScrollTo, behavior: "smooth" });
+      if (typeof e.data.fonHash === "string" && /^(#[\w=&.%-]*)?$/.test(e.data.fonHash))
+        history.replaceState(history.state, "", location.pathname + location.search + e.data.fonHash);
     });
     window.addEventListener("scroll", queue, { passive: true });
     window.addEventListener("resize", queue);
@@ -122,6 +127,8 @@ The address shown in chart footers and the citation (`tool_url`, www.financesoft
   })();
 </script>
 ```
+
+Notes: `allow="clipboard-write"` lets "Copy link to this view" use the clipboard from inside a cross-site iframe. The `class="fon-tool"` lets the theme CSS style the page title, as on financesofthenation.ca. GitHub Pages caches for about 10 minutes, so a newly merged month can take a few minutes to appear.
 
 ## Licence
 

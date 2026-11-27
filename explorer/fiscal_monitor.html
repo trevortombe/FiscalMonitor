@@ -2219,6 +2219,8 @@ function footerH(W, narrow, pad) {
     var h = p.length === 1 && activeTab !== 'time' ? '#' + activeTab : (p.length ? '#' + p.join('&') : '');
     try { history.replaceState(null, '', h || location.pathname + location.search); } catch (e) { /* sandboxed preview */ }
     if (HOST) { try { HOST.history.replaceState(HOST.history.state, '', HOST.location.pathname + HOST.location.search + h); } catch (e) { /* ignore */ } }
+    else if (IN_FRAME) { try { window.parent.postMessage({ fonHash: h }, '*'); } catch (e) { /* ignore */ } }   // page on another site
+    return h;
   }
   function readHash() {
     var h = location.hash || '';
@@ -2263,7 +2265,7 @@ function footerH(W, narrow, pad) {
   // Embedded in a page on the same site (the usual case on financesofthenation.ca): the tool sizes its
   // own iframe, follows the page's scrolling, and keeps the page's address in step with the view, so
   // the embed code is just an iframe. On another site it falls back to the postMessage protocol below.
-  var HOST = null, FRAME = null;
+  var HOST = null, FRAME = null, PAGE = null;   // PAGE: address of the embedding page on another site ({fonPage})
   try { if (IN_FRAME && window.frameElement && window.parent.document) { HOST = window.parent; FRAME = window.frameElement; } } catch (e) { HOST = null; FRAME = null; }
   function hostView() { var r = FRAME.getBoundingClientRect(); VIEW = { top: -r.top, height: HOST.innerHeight }; }
   if (HOST) {
@@ -2360,7 +2362,9 @@ function footerH(W, narrow, pad) {
   try { if (window.ResizeObserver && IN_FRAME) new ResizeObserver(function () { postHeight(); }).observe(document.body); } catch (e) { /* ignore */ }
   window.addEventListener('scroll', function () { if (!VIEW) placeFloat(); }, { passive: true });
   window.addEventListener('message', function (e) {
-    if (HOST || e.source !== window.parent || !e.data || !e.data.fonView) return;
+    if (HOST || e.source !== window.parent || !e.data) return;
+    if (typeof e.data.fonPage === 'string' && /^https?:\/\//.test(e.data.fonPage)) PAGE = e.data.fonPage.split('#')[0];
+    if (!e.data.fonView) return;
     var v = e.data.fonView;
     if (!isFinite(v.top) || !isFinite(v.height)) return;
     var first = !VIEW;
@@ -2401,8 +2405,8 @@ function footerH(W, narrow, pad) {
 
     $('reset').addEventListener('click', function () { S = clone(DEFAULTS); slots = {}; buildItemList(); update(); toast('Reset to the default view'); });
     $('share').addEventListener('click', function () {
-      writeHash();
-      var url = HOST ? HOST.location.href : location.href, done = function () { toast('Link to this view copied'); };
+      var h = writeHash();
+      var url = HOST ? HOST.location.href : PAGE ? PAGE + h : location.href, done = function () { toast('Link to this view copied'); };
       try {
         if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, function () { toast('Copy the address bar to share this view'); });
         else toast('Copy the address bar to share this view');
