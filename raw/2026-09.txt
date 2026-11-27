@@ -1,0 +1,129 @@
+# Fiscal Monitor transcription
+# report: 2026-09
+# source: https://www.canada.ca/en/department-finance/services/publications/fiscal-monitor/2026/09.html
+# date modified: 2026-11-27
+# transcribed: 2026-11-27 (scheduled run, WebFetch)
+T1 | Budgetary transactions
+T1 | Revenues | 37,051 | 39,079 | 238,226 | 254,616
+T1 | Expenses
+T1 | Program expenses, excluding net actuarial losses and gains | -37,084 | -39,193 | -224,247 | -235,144
+T1 | Public debt charges | -4,575 | -5,053 | -27,580 | -30,151
+T1 | Budgetary balance, excluding net actuarial losses and gains | -4,608 | -5,167 | -13,601 | -10,679
+T1 | Net actuarial (losses) gains | -415 | 30 | -2,490 | 180
+T1 | Budgetary balance (deficit/surplus) | -5,023 | -5,137 | -16,091 | -10,499
+T1 | Non-budgetary transactions | -2,434 | -8,513 | -39,101 | -63,291
+T1 | Financial source/requirement | -7,457 | -13,650 | -55,192 | -73,790
+T1 | Net change in financing activities | -32,035 | -455 | 57,807 | 63,519
+T1 | Net change in cash balances | -39,492 | -14,105 | 2,615 | -10,271
+T1 | Cash balance at end of period | | | 48,757 | 38,066
+T2 | Tax revenues
+T2 | Income taxes
+T2 | Personal | 18,217 | 20,024 | 9.9 | 107,979 | 116,351 | 7.8
+T2 | Corporate | 5,969 | 6,104 | 2.3 | 44,047 | 44,809 | 1.7
+T2 | Non-resident | 634 | 929 | 46.5 | 6,224 | 7,125 | 14.5
+T2 | Total income tax revenues | 24,820 | 27,057 | 9.0 | 158,250 | 168,285 | 6.3
+T2 | Other taxes and duties
+T2 | Goods and Services Tax | 4,291 | 3,476 | -19.0 | 26,912 | 29,444 | 9.4
+T2 | Energy taxes | 520 | -1 | -100.2 | 2,803 | 1,252 | -55.3
+T2 | Customs import duties | 749 | 864 | 15.4 | 6,537 | 4,501 | -31.1
+T2 | Other taxes, excise taxes and duties | 565 | 605 | 7.1 | 3,720 | 3,788 | 1.8
+T2 | Total other taxes and duties | 6,125 | 4,944 | -19.3 | 39,972 | 38,985 | -2.5
+T2 | Total tax revenues | 30,945 | 32,001 | 3.4 | 198,222 | 207,270 | 4.6
+T2 | Employment Insurance premiums | 2,191 | 2,229 | 1.7 | 16,603 | 17,349 | 4.5
+T2 | Other revenues | 3,915 | 4,849 | 23.9 | 23,401 | 29,997 | 28.2
+T2 | Total revenues | 37,051 | 39,079 | 5.5 | 238,226 | 254,616 | 6.9
+T3 | Major transfers to persons
+T3 | Old Age Security program | 6,829 | 7,293 | 6.8 | 40,617 | 42,922 | 5.7
+T3 | Employment Insurance benefits | 2,935 | 2,344 | -20.1 | 13,735 | 14,189 | 3.3
+T3 | Children's benefits | 2,464 | 2,551 | 3.5 | 14,597 | 15,230 | 4.3
+T3 | Total major transfers to persons | 12,228 | 12,188 | -0.3 | 68,949 | 72,341 | 4.9
+T3 | Major transfers to provinces, territories and municipalities
+T3 | Canada Health Transfer | 4,557 | 4,785 | 5.0 | 27,342 | 28,715 | 5.0
+T3 | Canada Social Transfer | 1,451 | 1,495 | 3.0 | 8,708 | 8,969 | 3.0
+T3 | Equalization | 2,181 | 2,263 | 3.8 | 13,085 | 13,580 | 3.8
+T3 | Territorial Formula Financing | 373 | 397 | 6.4 | 3,249 | 3,459 | 6.5
+T3 | Canada-wide early learning and child care | - | - | n/a | 2,416 | 2,050 | -15.1
+T3 | Build Communities Strong Fund - Community Stream | - | - | n/a | 1,243 | 1,233 | -0.8
+T3 | Health agreements with provinces/territories2 | - | - | n/a | 2,150 | 909 | -57.7
+T3 | Other fiscal arrangements3 | -661 | -882 | -33.4 | -3,784 | -4,341 | -14.7
+T3 | Total major transfers to provinces, territories and municipalities | 7,901 | 8,058 | 2.0 | 54,409 | 54,574 | 0.3
+T3 | Pollution pricing proceeds returned to Canadians | 96 | 31 | -67.7 | 2,647 | 419 | -84.2
+T3 | Direct program expenses
+T3 | Other transfer payments4 | 6,695 | 8,125 | 21.4 | 38,913 | 43,590 | 12.0
+T3 | Operating expenses4 | 10,164 | 10,791 | 6.2 | 59,329 | 64,220 | 8.2
+T3 | Total direct program expenses | 16,859 | 18,916 | 12.2 | 98,242 | 107,810 | 9.7
+T3 | Total program expenses, excluding net actuarial losses and gains | 37,084 | 39,193 | 5.7 | 224,247 | 235,144 | 4.9
+T3 | Public debt charges | 4,575 | 5,053 | 10.4 | 27,580 | 30,151 | 9.3
+T3 | Total expenses, excluding net actuarial losses and gains | 41,659 | 44,246 | 6.2 | 251,827 | 265,295 | 5.3
+T3 | Net actuarial losses (gains) | 415 | -30 | -107.2 | 2,490 | -180 | -107.2
+T3 | Total expenses | 42,074 | 44,216 | 5.1 | 254,317 | 265,115 | 4.2
+T4 | Transfer payments2 | 26,920 | 28,402 | 5.5 | 164,918 | 170,924 | 3.6
+T4 | Other expenses2
+T4 | Personnel, excluding net actuarial losses and gains | 6,188 | 5,982 | -3.3 | 37,436 | 36,624 | -2.2
+T4 | Transportation and communications | 224 | 230 | 2.7 | 1,248 | 1,382 | 10.7
+T4 | Information | 28 | 36 | 28.6 | 169 | 193 | 14.2
+T4 | Professional and special services | 1,564 | 2,688 | 71.9 | 7,626 | 10,840 | 42.1
+T4 | Rentals | 292 | 352 | 20.5 | 2,486 | 2,455 | -1.2
+T4 | Repair and maintenance | 319 | 423 | 32.6 | 1,622 | 1,893 | 16.7
+T4 | Utilities, materials and supplies | 231 | 228 | -1.3 | 1,345 | 1,590 | 18.2
+T4 | Other subsidies and expenses | 890 | 380 | -57.3 | 4,449 | 6,421 | 44.3
+T4 | Amortization of tangible capital assets | 416 | 464 | 11.5 | 2,873 | 2,758 | -4.0
+T4 | Net loss on disposal of assets | 12 | 8 | -33.3 | 75 | 64 | -14.7
+T4 | Total other expenses | 10,164 | 10,791 | 6.2 | 59,329 | 64,220 | 8.2
+T4 | Total program expenses, excluding net actuarial losses and gains | 37,084 | 39,193 | 5.7 | 224,247 | 235,144 | 4.9
+T4 | Public debt charges | 4,575 | 5,053 | 10.4 | 27,580 | 30,151 | 9.3
+T4 | Total expenses, excluding net actuarial losses and gains | 41,659 | 44,246 | 6.2 | 251,827 | 265,295 | 5.3
+T4 | Net actuarial losses (gains) | 415 | -30 | -107.2 | 2,490 | -180 | -107.2
+T4 | Total expenses | 42,074 | 44,216 | 5.1 | 254,317 | 265,115 | 4.2
+T5 | Budgetary balance (deficit/surplus) | -5,023 | -5,137 | -16,091 | -10,499
+T5 | Non-budgetary transactions
+T5 | Accounts payable, accrued liabilities and accounts receivable | 2,936 | 4,496 | -14,215 | -19,696
+T5 | Pensions, other future benefits, and other liabilities | 752 | -54 | 5,601 | 1,001
+T5 | Foreign exchange accounts and derivatives | 1,717 | -494 | 4,684 | -1,888
+T5 | Loans, investments and advances | -6,955 | -10,199 | -30,623 | -35,140
+T5 | Non-financial assets | -884 | -2,262 | -4,548 | -7,568
+T5 | Total non-budgetary transactions | -2,434 | -8,513 | -39,101 | -63,291
+T5 | Financial source/requirement | -7,457 | -13,650 | -55,192 | -73,790
+T6 | Financial source/requirement | -7,457 | -13,650 | -55,192 | -73,790
+T6 | Net increase (+)/decrease (-) in financing activities
+T6 | Unmatured debt transactions
+T6 | Canadian currency borrowings
+T6 | Marketable bonds | -30,512 | -1,649 | 41,591 | 41,620
+T6 | Treasury bills | -3,907 | 589 | 20,623 | 22,880
+T6 | Total Canadian currency borrowings | -34,419 | -1,060 | 62,214 | 64,500
+T6 | Foreign currency borrowings | 2,403 | 623 | -4,533 | -811
+T6 | Total market debt transactions | -32,016 | -437 | 57,681 | 63,689
+T6 | Obligations related to capital leases and other unmatured debt | -19 | -18 | 126 | -170
+T6 | Net change in financing activities | -32,035 | -455 | 57,807 | 63,519
+T6 | Change in cash balance | -39,492 | -14,105 | 2,615 | -10,271
+T6 | Cash balance at end of period | | | 48,757 | 38,066
+T7 | Liabilities
+T7 | Accounts payable and accrued liabilities | 273,362 | 248,137 | -25,225
+T7 | Interest-bearing debt
+T7 | Unmatured debt
+T7 | Payable in Canadian currency
+T7 | Marketable bonds | 1,280,430 | 1,322,050 | 41,620
+T7 | Treasury bills | 283,361 | 306,241 | 22,880
+T7 | Subtotal | 1,563,791 | 1,628,291 | 64,500
+T7 | Payable in foreign currencies | 23,155 | 22,344 | -811
+T7 | Obligations related to capital leases and other unmatured debt | 4,702 | 4,532 | -170
+T7 | Total unmatured debt | 1,591,648 | 1,655,167 | 63,519
+T7 | Pension and other liabilities
+T7 | Public sector pensions | 160,159 | 155,003 | -5,156
+T7 | Other employee and veteran future benefits | 233,842 | 240,484 | 6,642
+T7 | Other liabilities | 7,720 | 7,235 | -485
+T7 | Total pension and other liabilities | 401,721 | 402,722 | 1,001
+T7 | Total interest-bearing debt | 1,993,369 | 2,057,889 | 64,520
+T7 | Foreign exchange accounts liabilities | 46,333 | 47,242 | 909
+T7 | Derivatives1 | 5,267 | 5,563 | 296
+T7 | Total liabilities | 2,318,331 | 2,358,831 | 40,500
+T7 | Financial assets
+T7 | Cash and accounts receivable | 297,488 | 281,688 | -15,800
+T7 | Foreign exchange accounts assets | 194,687 | 199,555 | 4,868
+T7 | Derivatives1 | 1,751 | 92 | -1,659
+T7 | Loans, investments, and advances (net of allowances)2 | 341,106 | 378,000 | 36,894
+T7 | Public sector pension assets | 31,535 | 31,535 | -
+T7 | Total financial assets | 866,567 | 890,870 | 24,303
+T7 | Net debt | 1,451,764 | 1,467,961 | 16,197
+T7 | Non-financial assets | 145,650 | 153,218 | 7,568
+T7 | Federal debt (accumulated deficit) | 1,306,114 | 1,314,743 | 8,629
