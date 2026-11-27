@@ -35207,3 +35207,124 @@ date,fiscalyear,year,month,fyear,fymon,tablenum,title,rowid,id,name,prior_year,t
 2026m8,2026/27,2026,8,2026,5,6,Table 6 Financial source/requirement and net financing activities,13,628,Net Change In Financing Activities,"21,800","4,421","89,842","63,974"
 2026m8,2026/27,2026,8,2026,5,6,Table 6 Financial source/requirement and net financing activities,14,630,Change In Cash Balance,"15,397",-996,"42,107","3,832"
 2026m8,2026/27,2026,8,2026,5,6,Table 6 Financial source/requirement and net financing activities,15,631,Cash Balance At End Of Period,,,"88,248","52,171"
+2026m9,2026/27,2026,9,2026,6,1,Table 1 Summary statement of transactions,3,100,Budgetary Transactions,,,,
+2026m9,2026/27,2026,9,2026,6,1,Table 1 Summary statement of transactions,4,101,Revenues,"37,051","39,079","238,226","254,616"
+2026m9,2026/27,2026,9,2026,6,1,Table 1 Summary statement of transactions,5,102,Expenses,,,,
+2026m9,2026/27,2026,9,2026,6,1,Table 1 Summary statement of transactions,6,104,Program Expenses,"-37,499","-39,163","-226,737","-234,964"
+2026m9,2026/27,2026,9,2026,6,1,Table 1 Summary statement of transactions,7,105,Public Debt Charges,"-4,575","-5,053","-27,580","-30,151"
+2026m9,2026/27,2026,9,2026,6,1,Table 1 Summary statement of transactions,8,106,"Budgetary Balance, Excluding Net Actuarial Losses","-4,608","-5,167","-13,601","-10,679"
+2026m9,2026/27,2026,9,2026,6,1,Table 1 Summary statement of transactions,9,107,Net Actuarial Losses,-415,30,"-2,490",180
+2026m9,2026/27,2026,9,2026,6,1,Table 1 Summary statement of transactions,10,108,Budgetary Balance(Deficit/Surplus),"-5,023","-5,137","-16,091","-10,499"
+2026m9,2026/27,2026,9,2026,6,1,Table 1 Summary statement of transactions,11,110,Non-Budgetary Transactions,"-2,434","-8,513","-39,101","-63,291"
+2026m9,2026/27,2026,9,2026,6,1,Table 1 Summary statement of transactions,12,111,Financial Requirements/Source,"-7,457","-13,650","-55,192","-73,790"
+2026m9,2026/27,2026,9,2026,6,1,Table 1 Summary statement of transactions,13,113,Net Change In Financing Activities,"-32,035",-455,"57,807","63,519"
+2026m9,2026/27,2026,9,2026,6,1,Table 1 Summary statement of transactions,14,114,Net Change in Cash Balances,"-39,492","-14,105","2,615","-10,271"
+2026m9,2026/27,2026,9,2026,6,1,Table 1 Summary statement of transactions,15,116,Cash Balance At End Of Period,,,"48,757","38,066"
+2026m9,2026/27,2026,9,2026,6,1,Table 1 Summary statement of transactions,9006,103,"Program Expenses, Excluding Net Actuarial Losses","-37,084","-39,193","-224,247","-235,144"
+2026m9,2026/27,2026,9,2026,6,2,Table 2 Revenues,4,200,Tax Revenues,,,,
+2026m9,2026/27,2026,9,2026,6,2,Table 2 Revenues,5,201,Income Taxes,,,,
+2026m9,2026/27,2026,9,2026,6,2,Table 2 Revenues,6,202,Personal Income Tax,"18,217","20,024","107,979","116,351"
+2026m9,2026/27,2026,9,2026,6,2,Table 2 Revenues,7,203,Corporate Income Tax,"5,969","6,104","44,047","44,809"
+2026m9,2026/27,2026,9,2026,6,2,Table 2 Revenues,8,204,Non-Resident Income Tax,634,929,"6,224","7,125"
+2026m9,2026/27,2026,9,2026,6,2,Table 2 Revenues,9,205,Total Income Tax Revenues,"24,820","27,057","158,250","168,285"
+2026m9,2026/27,2026,9,2026,6,2,Table 2 Revenues,10,206,Other Taxes And Duties,,,,
+2026m9,2026/27,2026,9,2026,6,2,Table 2 Revenues,11,207,Goods And Services Tax,"4,291","3,476","26,912","29,444"
+2026m9,2026/27,2026,9,2026,6,2,Table 2 Revenues,12,208,Energy Taxes,520,-1,"2,803","1,252"
+2026m9,2026/27,2026,9,2026,6,2,Table 2 Revenues,13,209,Customs Import Duties,749,864,"6,537","4,501"
+2026m9,2026/27,2026,9,2026,6,2,Table 2 Revenues,14,210,Other Excise Taxes And Duties,565,605,"3,720","3,788"
+2026m9,2026/27,2026,9,2026,6,2,Table 2 Revenues,15,211,Total Other Taxes And Duties,"6,125","4,944","39,972","38,985"
+2026m9,2026/27,2026,9,2026,6,2,Table 2 Revenues,16,213,Total Tax Revenues,"30,945","32,001","198,222","207,270"
+2026m9,2026/27,2026,9,2026,6,2,Table 2 Revenues,18,215,Employment Insurance Premium Revenues,"2,191","2,229","16,603","17,349"
+2026m9,2026/27,2026,9,2026,6,2,Table 2 Revenues,19,217,Other Revenues,"3,915","4,849","23,401","29,997"
+2026m9,2026/27,2026,9,2026,6,2,Table 2 Revenues,20,218,Total Revenues,"37,051","39,079","238,226","254,616"
+2026m9,2026/27,2026,9,2026,6,3,Table 3 Expenses,4,301,Major Transfers To Persons,,,,
+2026m9,2026/27,2026,9,2026,6,3,Table 3 Expenses,5,304,Elderly Benefits,"6,829","7,293","40,617","42,922"
+2026m9,2026/27,2026,9,2026,6,3,Table 3 Expenses,6,305,Employment Insurance Benefits,"2,935","2,344","13,735","14,189"
+2026m9,2026/27,2026,9,2026,6,3,Table 3 Expenses,8,310,Children's Benefits,"2,464","2,551","14,597","15,230"
+2026m9,2026/27,2026,9,2026,6,3,Table 3 Expenses,9,311,Total Major Transfers To Persons,"12,228","12,188","68,949","72,341"
+2026m9,2026/27,2026,9,2026,6,3,Table 3 Expenses,10,313,Major Transfers To Other Levels Of Government,,,,
+2026m9,2026/27,2026,9,2026,6,3,Table 3 Expenses,11,318,Canada Health Transfer,"4,557","4,785","27,342","28,715"
+2026m9,2026/27,2026,9,2026,6,3,Table 3 Expenses,12,319,Canada Social Transfer,"1,451","1,495","8,708","8,969"
+2026m9,2026/27,2026,9,2026,6,3,Table 3 Expenses,13,323,Equalization,"2,181","2,263","13,085","13,580"
+2026m9,2026/27,2026,9,2026,6,3,Table 3 Expenses,14,324,Territorial Formula Financing,373,397,"3,249","3,459"
+2026m9,2026/27,2026,9,2026,6,3,Table 3 Expenses,15,384,Canada-wide early learning and child care,0,0,"2,416","2,050"
+2026m9,2026/27,2026,9,2026,6,3,Table 3 Expenses,16,325,Build Communities Strong Fund - Community Stream,0,0,"1,243","1,233"
+2026m9,2026/27,2026,9,2026,6,3,Table 3 Expenses,17,781,Health Agreements With Provinces/Territories,0,0,"2,150",909
+2026m9,2026/27,2026,9,2026,6,3,Table 3 Expenses,18,327,Other Fiscal Arrangements,-661,-882,"-3,784","-4,341"
+2026m9,2026/27,2026,9,2026,6,3,Table 3 Expenses,19,328,Total Major Transfers To Other Levels Of Government,"7,901","8,058","54,409","54,574"
+2026m9,2026/27,2026,9,2026,6,3,Table 3 Expenses,20,344,Fuel Charge Proceeds Returned,96,31,"2,647",419
+2026m9,2026/27,2026,9,2026,6,3,Table 3 Expenses,21,333,Direct Program Expenses,,,,
+2026m9,2026/27,2026,9,2026,6,3,Table 3 Expenses,22,346,Other Transfer Payments,"6,695","8,125","38,913","43,590"
+2026m9,2026/27,2026,9,2026,6,3,Table 3 Expenses,23,365,Operating Expenses,"10,164","10,791","59,329","64,220"
+2026m9,2026/27,2026,9,2026,6,3,Table 3 Expenses,24,368,Total Direct Program Expenses,"16,859","18,916","98,242","107,810"
+2026m9,2026/27,2026,9,2026,6,3,Table 3 Expenses,25,369,"Total Program Expenses, Excluding Net Actuarial Losses","37,084","39,193","224,247","235,144"
+2026m9,2026/27,2026,9,2026,6,3,Table 3 Expenses,26,370,Public Debt Charges,"4,575","5,053","27,580","30,151"
+2026m9,2026/27,2026,9,2026,6,3,Table 3 Expenses,27,371,"Total Expenses, Excluding Net Actuarial Losses","41,659","44,246","251,827","265,295"
+2026m9,2026/27,2026,9,2026,6,3,Table 3 Expenses,28,372,Net Actuarial Losses,415,-30,"2,490",-180
+2026m9,2026/27,2026,9,2026,6,3,Table 3 Expenses,29,376,Total Expenses,"42,074","44,216","254,317","265,115"
+2026m9,2026/27,2026,9,2026,6,4,Table 4 Total expenses by object of expense,4,400,Transfer Payments,"26,920","28,402","164,918","170,924"
+2026m9,2026/27,2026,9,2026,6,4,Table 4 Total expenses by object of expense,5,401,Other Expenses,,,,
+2026m9,2026/27,2026,9,2026,6,4,Table 4 Total expenses by object of expense,6,403,"Personnel, Excluding Net Actuarial Losses","6,188","5,982","37,436","36,624"
+2026m9,2026/27,2026,9,2026,6,4,Table 4 Total expenses by object of expense,7,404,Transportation And Communications,224,230,"1,248","1,382"
+2026m9,2026/27,2026,9,2026,6,4,Table 4 Total expenses by object of expense,8,405,Information,28,36,169,193
+2026m9,2026/27,2026,9,2026,6,4,Table 4 Total expenses by object of expense,9,406,Professional And Special Services,"1,564","2,688","7,626","10,840"
+2026m9,2026/27,2026,9,2026,6,4,Table 4 Total expenses by object of expense,10,407,Rentals,292,352,"2,486","2,455"
+2026m9,2026/27,2026,9,2026,6,4,Table 4 Total expenses by object of expense,11,408,Repair And Maintenance,319,423,"1,622","1,893"
+2026m9,2026/27,2026,9,2026,6,4,Table 4 Total expenses by object of expense,12,409,"Utilities, Materials And Supplies",231,228,"1,345","1,590"
+2026m9,2026/27,2026,9,2026,6,4,Table 4 Total expenses by object of expense,13,410,Other Subsidies And Expenses,890,380,"4,449","6,421"
+2026m9,2026/27,2026,9,2026,6,4,Table 4 Total expenses by object of expense,14,411,Amortization Of Tangible Capital Assets,416,464,"2,873","2,758"
+2026m9,2026/27,2026,9,2026,6,4,Table 4 Total expenses by object of expense,15,412,Net Loss On Disposal Of Assets,12,8,75,64
+2026m9,2026/27,2026,9,2026,6,4,Table 4 Total expenses by object of expense,16,413,Total Other Expenses,"10,164","10,791","59,329","64,220"
+2026m9,2026/27,2026,9,2026,6,4,Table 4 Total expenses by object of expense,17,414,"Total Program Expenses, Excluding Net Actuarial Losses","37,084","39,193","224,247","235,144"
+2026m9,2026/27,2026,9,2026,6,4,Table 4 Total expenses by object of expense,18,415,Public Debt Charges,"4,575","5,053","27,580","30,151"
+2026m9,2026/27,2026,9,2026,6,4,Table 4 Total expenses by object of expense,19,416,"Total Expenses, Excluding Net Actuarial Losses","41,659","44,246","251,827","265,295"
+2026m9,2026/27,2026,9,2026,6,4,Table 4 Total expenses by object of expense,20,417,Net Actuarial Losses,415,-30,"2,490",-180
+2026m9,2026/27,2026,9,2026,6,4,Table 4 Total expenses by object of expense,21,419,Total Expenses,"42,074","44,216","254,317","265,115"
+2026m9,2026/27,2026,9,2026,6,5,Table 5 The budgetary balance and financial source/requirement,3,500,Budgetary Balance(Deficit/Surplus),"-5,023","-5,137","-16,091","-10,499"
+2026m9,2026/27,2026,9,2026,6,5,Table 5 The budgetary balance and financial source/requirement,4,501,Non-Budgetary Transactions,,,,
+2026m9,2026/27,2026,9,2026,6,5,Table 5 The budgetary balance and financial source/requirement,5,513,Accounts Payable And Accrued Liabilities and Accounts Receivable,"2,936","4,496","-14,215","-19,696"
+2026m9,2026/27,2026,9,2026,6,5,Table 5 The budgetary balance and financial source/requirement,6,515,"Pensions, Other Future Benefits, And Other Liabilities",752,-54,"5,601","1,001"
+2026m9,2026/27,2026,9,2026,6,5,Table 5 The budgetary balance and financial source/requirement,7,516,Foreign Exchange Transactions,"1,717",-494,"4,684","-1,888"
+2026m9,2026/27,2026,9,2026,6,5,Table 5 The budgetary balance and financial source/requirement,8,518,"Loans, Investments And Advances","-6,955","-10,199","-30,623","-35,140"
+2026m9,2026/27,2026,9,2026,6,5,Table 5 The budgetary balance and financial source/requirement,9,519,Non-Financial Assets,-884,"-2,262","-4,548","-7,568"
+2026m9,2026/27,2026,9,2026,6,5,Table 5 The budgetary balance and financial source/requirement,10,520,Total Non-Budgetary Transactions,"-2,434","-8,513","-39,101","-63,291"
+2026m9,2026/27,2026,9,2026,6,5,Table 5 The budgetary balance and financial source/requirement,11,522,Financial Requirements/Source,"-7,457","-13,650","-55,192","-73,790"
+2026m9,2026/27,2026,9,2026,6,6,Table 6 Financial source/requirement and net financing activities,3,600,Financial Requirements/Source,"-7,457","-13,650","-55,192","-73,790"
+2026m9,2026/27,2026,9,2026,6,6,Table 6 Financial source/requirement and net financing activities,4,601,Net increase (+)/decrease (-) in financing activities,,,,
+2026m9,2026/27,2026,9,2026,6,6,Table 6 Financial source/requirement and net financing activities,5,604,Unmatured Debt Transactions,,,,
+2026m9,2026/27,2026,9,2026,6,6,Table 6 Financial source/requirement and net financing activities,6,605,Canadian Currency Borrowings,,,,
+2026m9,2026/27,2026,9,2026,6,6,Table 6 Financial source/requirement and net financing activities,7,606,Marketable Bonds,"-30,512","-1,649","41,591","41,620"
+2026m9,2026/27,2026,9,2026,6,6,Table 6 Financial source/requirement and net financing activities,8,610,Treasury Bills,"-3,907",589,"20,623","22,880"
+2026m9,2026/27,2026,9,2026,6,6,Table 6 Financial source/requirement and net financing activities,9,617,Total Canadian Currency Borrowings,"-34,419","-1,060","62,214","64,500"
+2026m9,2026/27,2026,9,2026,6,6,Table 6 Financial source/requirement and net financing activities,10,619,Foreign Currency Borrowings,"2,403",623,"-4,533",-811
+2026m9,2026/27,2026,9,2026,6,6,Table 6 Financial source/requirement and net financing activities,11,623,Total Market Debt Transactions,"-32,016",-437,"57,681","63,689"
+2026m9,2026/27,2026,9,2026,6,6,Table 6 Financial source/requirement and net financing activities,12,626,Obligations Related To Capital Leases And Other Unmatured Debt,-19,-18,126,-170
+2026m9,2026/27,2026,9,2026,6,6,Table 6 Financial source/requirement and net financing activities,13,628,Net Change In Financing Activities,"-32,035",-455,"57,807","63,519"
+2026m9,2026/27,2026,9,2026,6,6,Table 6 Financial source/requirement and net financing activities,14,630,Change In Cash Balance,"-39,492","-14,105","2,615","-10,271"
+2026m9,2026/27,2026,9,2026,6,6,Table 6 Financial source/requirement and net financing activities,15,631,Cash Balance At End Of Period,,,"48,757","38,066"
+2026m9,2026/27,2026,9,2026,6,7,Table 7 Condensed statement of assets and liabilities $ millions,2,700,Liabilities,,,,
+2026m9,2026/27,2026,9,2026,6,7,Table 7 Condensed statement of assets and liabilities $ millions,3,702,Accounts Payable And Accrued Liabilities,"273,362","248,137",,
+2026m9,2026/27,2026,9,2026,6,7,Table 7 Condensed statement of assets and liabilities $ millions,4,704,Interest-Bearing Debt,,,,
+2026m9,2026/27,2026,9,2026,6,7,Table 7 Condensed statement of assets and liabilities $ millions,5,708,Unmatured Debt,,,,
+2026m9,2026/27,2026,9,2026,6,7,Table 7 Condensed statement of assets and liabilities $ millions,6,709,Payable In Canadian Dollars,,,,
+2026m9,2026/27,2026,9,2026,6,7,Table 7 Condensed statement of assets and liabilities $ millions,7,710,Marketable Bonds,"1,280,430","1,322,050",,
+2026m9,2026/27,2026,9,2026,6,7,Table 7 Condensed statement of assets and liabilities $ millions,8,713,Treasury Bills,"283,361","306,241",,
+2026m9,2026/27,2026,9,2026,6,7,Table 7 Condensed statement of assets and liabilities $ millions,9,721,Subtotal,"1,563,791","1,628,291",,
+2026m9,2026/27,2026,9,2026,6,7,Table 7 Condensed statement of assets and liabilities $ millions,10,718,Payable In Foreign Currencies,"23,155","22,344",,
+2026m9,2026/27,2026,9,2026,6,7,Table 7 Condensed statement of assets and liabilities $ millions,11,724,Obligations Related To Capital Leases And Other Unmatured Debt,"4,702","4,532",,
+2026m9,2026/27,2026,9,2026,6,7,Table 7 Condensed statement of assets and liabilities $ millions,12,725,Total Unmatured Debt,"1,591,648","1,655,167",,
+2026m9,2026/27,2026,9,2026,6,7,Table 7 Condensed statement of assets and liabilities $ millions,13,726,"Pensions, Other Future Benefits, And Other Liabilities",,,,
+2026m9,2026/27,2026,9,2026,6,7,Table 7 Condensed statement of assets and liabilities $ millions,14,727,Public Sector Pensions,"160,159","155,003",,
+2026m9,2026/27,2026,9,2026,6,7,Table 7 Condensed statement of assets and liabilities $ millions,15,729,Other Employee And Veteran Future Benefits,"233,842","240,484",,
+2026m9,2026/27,2026,9,2026,6,7,Table 7 Condensed statement of assets and liabilities $ millions,16,730,Other Liabilities,"7,720","7,235",,
+2026m9,2026/27,2026,9,2026,6,7,Table 7 Condensed statement of assets and liabilities $ millions,17,731,Total Pension And Other Accounts,"401,721","402,722",,
+2026m9,2026/27,2026,9,2026,6,7,Table 7 Condensed statement of assets and liabilities $ millions,18,732,Total Interest-Bearing Debt,"1,993,369","2,057,889",,
+2026m9,2026/27,2026,9,2026,6,7,Table 7 Condensed statement of assets and liabilities $ millions,21,733,Total Liabilities,"2,318,331","2,358,831",,
+2026m9,2026/27,2026,9,2026,6,7,Table 7 Condensed statement of assets and liabilities $ millions,22,734,Financial Assets,,,,
+2026m9,2026/27,2026,9,2026,6,7,Table 7 Condensed statement of assets and liabilities $ millions,23,736,Cash And Accounts Receivable,"297,488","281,688",,
+2026m9,2026/27,2026,9,2026,6,7,Table 7 Condensed statement of assets and liabilities $ millions,26,739,"Loans, Investments And Advances(Net Of Allowances)","341,106","378,000",,
+2026m9,2026/27,2026,9,2026,6,7,Table 7 Condensed statement of assets and liabilities $ millions,27,740,Public Sector Pension Assets,"31,535","31,535",,
+2026m9,2026/27,2026,9,2026,6,7,Table 7 Condensed statement of assets and liabilities $ millions,28,741,Total Financial Assets,"866,567","890,870",,
+2026m9,2026/27,2026,9,2026,6,7,Table 7 Condensed statement of assets and liabilities $ millions,29,743,Net Debt,"1,451,764","1,467,961",,
+2026m9,2026/27,2026,9,2026,6,7,Table 7 Condensed statement of assets and liabilities $ millions,30,744,Non-Financial Assets,"145,650","153,218",,
+2026m9,2026/27,2026,9,2026,6,7,Table 7 Condensed statement of assets and liabilities $ millions,31,745,Federal Debt(Accumulated Deficit),"1,306,114","1,314,743",,
